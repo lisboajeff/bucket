@@ -79,7 +79,7 @@ def sync_to_s3(s3_client, files, bucket):
     for file in files['remove']:
         remove_file_from_s3(s3_client, file, bucket)
 
-def upload_file(s3_client, filename, bucket, metadata: dict[str]):
+def upload_file(s3_client, filename, bucket, metadata):
     """Faz o upload de um arquivo para o S3."""
     key = metadata["virtual_path"]
     try:
