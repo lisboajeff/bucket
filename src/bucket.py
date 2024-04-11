@@ -4,24 +4,20 @@ import boto3
 actions = {"Uploaded": [], "Removed": []}
 
 def write_summary_to_file(report_file):
-    """Escreve o resumo das ações realizadas em formato de tabela em um arquivo."""
+    """Escreve o resumo das ações em formato Markdown."""
+    lines = []
+    if not actions["Uploaded"] and not actions["Removed"]:
+        lines.append("Nenhum arquivo foi adicionado ou removido.")
+    else:
+        lines.append("| Ação       | Nome do Arquivo |\n")
+        lines.append("|------------|-----------------|")
+        for filename in actions["Uploaded"]:
+            lines.append(f"| Uploaded    | {filename} |")
+        for filename in actions["Removed"]:
+            lines.append(f"| Removed     | {filename} |")
 
     with open(report_file, "w") as file:
-
-        if not actions["Uploaded"] and not actions["Removed"]:
-            file.write("Nenhum arquivo foi adicionado ou removido.\n")
-        else:
-            # Cabeçalho da Tabela
-            file.write(f"{'Ação':<15}{'Nome do Arquivo'}\n")
-            file.write(f"{'-'*15}{'-'*50}\n")
-
-            # Linhas para Arquivos Carregados
-            for filename in actions["Uploaded"]:
-                file.write(f"{'Uploaded':<15}{filename}\n")
-
-            # Linhas para Arquivos Removidos
-            for filename in actions["Removed"]:
-                file.write(f"{'Removed':<15}{filename}\n")
+        file.write("\n".join(lines))
 
 def find_files(directory, extension):
     """Retorna uma lista de arquivos com a extensão especificada dentro do diretório."""
