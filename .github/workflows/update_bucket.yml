@@ -18,7 +18,7 @@ jobs:
       - name: Carregar Configurações do Ambiente
         run: |
           echo "Carregando configurações para o ambiente ${{ github.event.inputs.ambiente }}"
-          source ./github/workflows/env/${{ github.event.inputs.ambiente }}.env
+          source env/${{ github.event.inputs.ambiente }}.env
           echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
 
       - name: Set up Python
