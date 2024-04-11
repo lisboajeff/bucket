@@ -54,7 +54,7 @@ jobs:
             fi
           done  
           if [ ${#MISSING_VARS[@]} -ne 0 ]; then
-            echo "Erro: As seguintes variáveis estão faltando no config.env: ${MISSING_VARS[*]}"
+            echo "Erro: As seguintes variáveis estão faltando no config.env: ${MISSING_VARS[*]}" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
   
@@ -68,9 +68,6 @@ jobs:
       - name: Install Boto3
         run: pip install boto3
 
-      - name: Print AWS Region
-        run: echo "AWS_REGION=${{ env.AWS_REGION }}"
-      
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
