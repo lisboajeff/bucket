@@ -9,8 +9,11 @@ def list_local_files(local_path):
 def list_s3_files(s3_client, bucket_name, prefix=''):
     """Lista todos os arquivos no diretório especificado do bucket S3."""
     s3_files = []
-    for obj in s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)['Contents']:
-        s3_files.append(obj['Key'])
+    response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+    # Verifica se 'Contents' está na resposta
+    if 'Contents' in response:
+        for obj in response['Contents']:
+            s3_files.append(obj['Key'])
     return s3_files
 
 def upload_files_to_s3(s3_client, files, bucket_name, s3_path, local_path):
