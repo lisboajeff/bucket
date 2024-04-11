@@ -9,7 +9,7 @@ def write_summary_to_file(report_file):
     if not actions["Uploaded"] and not actions["Removed"]:
         lines.append("Nenhum arquivo foi adicionado ou removido.")
     else:
-        lines.append("| Ação       | Nome do Arquivo |\n")
+        lines.append("| Ação       | Nome do Arquivo |")
         lines.append("|------------|-----------------|")
         for filename in actions["Uploaded"]:
             lines.append(f"| Uploaded    | {filename} |")
