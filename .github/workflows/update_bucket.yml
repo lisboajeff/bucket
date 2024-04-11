@@ -45,6 +45,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ env.AWS_REGION }}
           
-      - name: Print S3 Sync Report
-        run: cat s3_sync_report.txt
+      - name: Publish Report to Job Summary
+        run: |
+          echo "### S3 Sync Report" >> $GITHUB_STEP_SUMMARY
+          cat s3_sync_report.md >> $GITHUB_STEP_SUMMARY
         
