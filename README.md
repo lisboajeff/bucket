@@ -1,5 +1,7 @@
 # Projeto
 
+[![Deploy Certificates to S3](https://github.com/lisboajeff/bucket/actions/workflows/update_bucket.yml/badge.svg)](https://github.com/lisboajeff/bucket/actions/workflows/update_bucket.yml)
+
 # Sincronização de Certificados com S3
 
 ## Descrição
