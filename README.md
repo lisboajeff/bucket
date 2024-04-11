@@ -1,30 +1,28 @@
 # Projeto
 
-# Sincronizador de Certificados com AWS S3
+# Sincronização de Certificados com S3
 
-Este script Python automatiza o processo de sincronização de certificados `.pem` e `.crt` com um bucket específico da AWS S3. Ele verifica os certificados locais contra os armazenados no S3, fazendo upload de novos ou modificados e removendo aqueles que não existem mais localmente.
+## Descrição
+O script `bucket.py` é uma ferramenta de linha de comando desenvolvida para automatizar o processo de sincronização de certificados `.pem` e `.crt` com um bucket AWS S3. Essencial para manter a segurança e a integridade da comunicação em infraestruturas distribuídas, este script garante que os certificados necessários estejam sempre atualizados e acessíveis no ambiente AWS.
 
-## Dependências
+## Funcionalidades
+- **Sincronização Automatizada:** Compara certificados locais com os armazenados no S3, realizando upload ou remoção conforme necessário para manter a sincronia.
+- **Geração de Relatório:** Cria um relatório em formato Markdown (`s3_sync_report.md`) detalhando as ações realizadas durante a sincronização, incluindo quais arquivos foram adicionados ou removidos.
+- **Hash de Verificação:** Utiliza hash SHA-256 para verificar a integridade dos arquivos e determinar a necessidade de sincronização.
+- **Flexibilidade de Uso:** Permite a especificação de diferentes ambientes e países para a sincronização de certificados, aumentando a aplicabilidade em cenários multi-regionais.
 
-* Python 3.6+
-* boto3
-* argparse
-* hashlib
+## Pré-Requisitos
+Para utilizar este script, é necessário ter instalado:
+- Python 3
+- Boto3 (SDK da AWS para Python)
 
----
+Além disso, é preciso configurar as credenciais da AWS (AWS Access Key ID e AWS Secret Access Key), preferencialmente através do AWS CLI ou arquivo de configuração da AWS.
 
-## Configuração
+## Como Usar
+1. **Configuração de Ambiente:**
+   Certifique-se de que as variáveis de ambiente `AWS_REGION`, `BUCKET_NAME`, `TRUSTSTORE` e `TLS` estejam devidamente configuradas para refletir sua infraestrutura AWS.
 
-Antes de executar o script, configure as seguintes variáveis de ambiente:
-
-- `AWS_REGION`: A região da AWS onde o bucket S3 está localizado.
-- `BUCKET_NAME`: O nome do bucket S3 onde os certificados serão armazenados.
-- `TRUSTSTORE`: O prefixo do caminho no bucket S3 para certificados `.pem`.
-- `TLS`: O prefixo do caminho no bucket S3 para certificados `.crt`.
-
-## Uso
-
-Para executar o script, use o seguinte comando:
+2. **Para executar o script, use o seguinte comando:**
 
 ```bash
 PAIS="Brasil"
