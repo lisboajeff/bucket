@@ -50,4 +50,3 @@ set +a # Desativa a exportação automática
 
 # Executa o script Python
 python3 src/bucket.py $PAIS $AMBIENTE
-rm -rf local

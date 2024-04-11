@@ -42,6 +42,24 @@ jobs:
           fi
           echo "Todas as verificações de estrutura de diretórios passaram com sucesso."
 
+      - name: Verificar variáveis no config.env
+        env:
+          REQUIRED_VARS: "AWS_REGION BUCKET_NAME TRUSTSTORE TLS"
+        run: |
+          IFS=' ' read -r -a REQUIRED_VARS_ARRAY <<< "$REQUIRED_VARS"
+          MISSING_VARS=()
+          for VAR in "${REQUIRED_VARS_ARRAY[@]}"; do
+            if ! grep -qE "^${VAR}=" env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/config.env; then
+              MISSING_VARS+=("$VAR")
+            fi
+          done  
+          if [ ${#MISSING_VARS[@]} -ne 0 ]; then
+            echo "Erro: As seguintes variáveis estão faltando no config.env: ${MISSING_VARS[*]}"
+            exit 1
+          fi
+  
+          echo "Todas as variáveis necessárias estão definidas no config.env."
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:

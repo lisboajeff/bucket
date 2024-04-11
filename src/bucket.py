@@ -94,7 +94,7 @@ def upload_file(s3_client, filename, bucket, metadata):
                 ExtraArgs={'Metadata': {'hash': metadata["hash"]}}
             )
         print(f"Uploaded {filename} to s3://{bucket}/{key}")
-        actions["Uploaded"].append(filename)
+        actions["Uploaded"].append(key)
     except Exception as e:
         print(f"Failed to upload {filename}: {e}")
 
