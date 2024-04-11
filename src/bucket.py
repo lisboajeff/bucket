@@ -40,6 +40,9 @@ def find_files(directory, extension, folder=''):
 
     files_with_hash = {}
 
+    if not os.path.exists(path) or not os.listdir(path):
+        return files_with_hash
+    
     for f in os.listdir(path):
         if f.endswith(extension) and os.path.isfile(os.path.join(path, f)):
             full_path = os.path.join(path, f)
