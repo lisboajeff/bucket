@@ -10,4 +10,8 @@ fi
 
 while IFS= read -r line || [[ -n "$line" ]]; do
     # Ignora linhas vazias e comentários
-    if [[ $line = \#* ]] || [ -z "$lin
+    if [[ $line = \#* ]] || [ -z "$line" ]; then
+        continue
+    fi
+    echo "$line" >>$GITHUB_ENV
+done <"$ENV_FILE"
