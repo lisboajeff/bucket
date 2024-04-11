@@ -77,7 +77,7 @@ def main():
 
     sync_to_s3(s3_client, files_to_sync, bucket_name, s3_path, local_path)
 
-    report_file = "s3_sync_report.txt"
+    report_file = "s3_sync_report.md"
     write_summary_to_file(report_file)
 
 if __name__ == "__main__":
