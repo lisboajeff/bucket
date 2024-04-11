@@ -1,1 +1,0 @@
-Nenhum arquivo foi adicionado ou removido.
