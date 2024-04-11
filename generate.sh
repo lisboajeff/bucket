@@ -1,20 +1,21 @@
 #!/bin/bash
 
 # Verifica se os argumentos corretos foram fornecidos
-if [ "$#" -ne 2 ]; then
-    echo "Uso: $0 <Common Name> <Diretório de Destino>"
+if [ "$#" -ne 3 ]; then
+    echo "Uso: $0 <Common Name> <Diretório de Destino> <Extensão>"
     exit 1
 fi
 
 CN=$1
 DEST_DIR=$2
+EXTENSION=$3
 
 # Cria o diretório de destino se ele não existir
 mkdir -p "$DEST_DIR"
 
 # Define os nomes de arquivo de saída
 KEY_FILE="${DEST_DIR}/${CN}.key"
-CERT_FILE="${DEST_DIR}/${CN}.pem"
+CERT_FILE="${DEST_DIR}/${CN}.$EXTENSION"
 
 # Gera uma chave privada
 openssl genrsa -out "${KEY_FILE}" 2048

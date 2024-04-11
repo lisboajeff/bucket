@@ -3,11 +3,15 @@ name: Deploy Certificates to S3
 on:
   workflow_dispatch:
     inputs:
+      pais:
+        description: 'Escolha o pais: Brasil'
+        required: true
+        default: 'Brasil'
       ambiente:
-        description: 'Escolha o ambiente: DEV ou PRD'
+        description: 'Escolha o ambiente: DEV'
         required: true
         default: 'DEV'
-
+  
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -18,7 +22,7 @@ jobs:
       - name: Carregar Configurações do Ambiente
         run: |
           chmod +x src/env.sh
-          ./src/env.sh env/${{ github.event.inputs.ambiente }}/config.env
+          ./src/env.sh env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/config.env
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -39,7 +43,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Sync new PEM files to S3
-        run: python src/bucket.py
+        run: python src/bucket.py ${{ github.event.inputs.pais }} ${{ github.event.inputs.ambiente }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
