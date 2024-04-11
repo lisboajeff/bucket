@@ -39,7 +39,7 @@ def sync_to_s3(s3_client, files, bucket, s3_path, local_dir):
     for file in files['upload']:
         upload_file(s3_client, file, bucket, s3_path, local_dir)
     for file in files['remove']:
-        remove_file_from_s3(s3_client, file, bucket, s3_path)
+        remove_file_from_s3(s3_client, file, bucket)
 
 def upload_file(s3_client, filename, bucket, s3_path, local_dir):
     """Faz o upload de um arquivo para o S3."""
@@ -51,11 +51,11 @@ def upload_file(s3_client, filename, bucket, s3_path, local_dir):
     except Exception as e:
         print(f"Failed to upload {filename}: {e}")
 
-def remove_file_from_s3(s3_client, filename, bucket, s3_path):
+def remove_file_from_s3(s3_client, filename, bucket):
     """Remove um arquivo do S3."""
     try:
-        s3_client.delete_object(Bucket=bucket, Key=os.path.join(s3_path, filename))
-        print(f"Removed {filename} from s3://{bucket}/{os.path.join(s3_path, filename)}")
+        s3_client.delete_object(Bucket=bucket, Key=filename)
+        print(f"Removed {filename} from s3://{bucket}/{filename}")
         actions["Removed"].append(filename)
     except Exception as e:
         print(f"Failed to remove {filename}: {e}")
