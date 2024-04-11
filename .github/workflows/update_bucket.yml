@@ -24,6 +24,24 @@ jobs:
           chmod +x src/env.sh
           ./src/env.sh env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/config.env
 
+      - name: Verificar estrutura de diretórios e arquivo de configuração
+        run: |
+          if [ ! -f "env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/config.env" ]; then
+            echo "Erro: arquivo config.env não encontrado." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+          if [ ! -d "env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/certificates/truststore" ]; then
+            echo "Erro: diretório certificates/truststore não encontrado." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+          if [ ! -d "env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/certificates/ssl" ]; then
+            echo "Erro: diretório certificates/ssl não encontrado." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          echo "Todas as verificações de estrutura de diretórios passaram com sucesso."
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
