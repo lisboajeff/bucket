@@ -31,13 +31,13 @@ jobs:
             exit 1
           fi
 
-          if [ ! -d "env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/certificates/truststore" ]; then
-            echo "Erro: diretório certificates/truststore não encontrado." >> $GITHUB_STEP_SUMMARY
+          if [ ! -d "env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/certificates/${{ env.TRUSTSTORE }}" ]; then
+            echo "Erro: diretório certificates/${{ env.TRUSTSTORE }} não encontrado." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
-          if [ ! -d "env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/certificates/ssl" ]; then
-            echo "Erro: diretório certificates/ssl não encontrado." >> $GITHUB_STEP_SUMMARY
+          if [ ! -d "env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/certificates/${{ env.TLS }}" ]; then
+            echo "Erro: diretório certificates/${{ env.TLS }} não encontrado." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
           echo "Todas as verificações de estrutura de diretórios passaram com sucesso."
