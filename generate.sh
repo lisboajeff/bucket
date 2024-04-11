@@ -14,7 +14,7 @@ mkdir -p "$DEST_DIR"
 
 # Define os nomes de arquivo de saída
 KEY_FILE="${DEST_DIR}/${CN}.key"
-CERT_FILE="${DEST_DIR}/${CN}.cert.pem"
+CERT_FILE="${DEST_DIR}/${CN}.pem"
 
 # Gera uma chave privada
 openssl genrsa -out "${KEY_FILE}" 2048
