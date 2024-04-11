@@ -1,8 +1,15 @@
 import os
 import boto3
 import argparse
+import hashlib
 
 actions = {"Uploaded": [], "Removed": []}
+
+def args():
+    parser = argparse.ArgumentParser(description='Sincroniza certificados .pem com um bucket S3.')
+    parser.add_argument('pais', type=str, help='Pais')
+    parser.add_argument('ambiente', type=str, help='Ambiente')
+    return parser.parse_args()
 
 def write_summary_to_file(report_file):
     """Escreve o resumo das ações em formato Markdown."""
@@ -20,57 +27,70 @@ def write_summary_to_file(report_file):
     with open(report_file, "w") as file:
         file.write("\n".join(lines))
 
-def find_files(directory, extension, s3_folder=''):
-    """
-    Retorna uma lista de arquivos com a extensão especificada dentro do diretório, 
-    concatenados com uma pasta do bucket especificada.
+def calcular_hash_arquivo(full_path):
+    sha256_hash = hashlib.sha256()
+    with open(full_path, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
+def find_files(directory, extension, folder=''):
+   
+    path=f'{directory}/{folder}'
+
+    files_with_hash = {}
+
+    for f in os.listdir(path):
+        if f.endswith(extension) and os.path.isfile(os.path.join(path, f)):
+            full_path = os.path.join(path, f)
+            file_hash = calcular_hash_arquivo(full_path)
+            # Use o caminho relativo do arquivo como chave para evitar conflitos de nome
+            files_with_hash[full_path] = {'hash': file_hash, 'virtual_path': f'{folder}/{os.path.basename(full_path)}'}
+
+    return files_with_hash
     
-    :param directory: Diretório local onde os arquivos serão procurados.
-    :param extension: Extensão dos arquivos a serem listados.
-    :param s3_folder: Pasta dentro do bucket S3 onde os arquivos deverão ser colocados. 
-                      Este parâmetro é opcional.
-    :return: Lista de caminhos completos dos arquivos para upload no S3.
-    """
-
-    path=f'{directory}/{s3_folder}'
-
-    # print(path)
-
-    if not os.path.exists(path) or not os.listdir(path):
-        return []
-    
-    # Lista todos os arquivos no diretório que correspondem à extensão especificada
-    files = [f for f in os.listdir(path) if f.endswith(extension) and os.path.isfile(os.path.join(path, f))]
-        
-    # Se uma pasta do S3 foi especificada, concatena essa pasta com o nome do arquivo
-    if s3_folder:
-        return [os.path.join(s3_folder, f) for f in files]
-    else:
-        return files
+def verificar_hash_s3(s3_client, bucket, objeto, hash_local):
+    try:
+        resposta = s3_client.head_object(Bucket=bucket, Key=objeto)
+        hash_s3 = resposta['Metadata'].get('hash')
+        return hash_local == hash_s3
+    except s3_client.exceptions.NoSuchKey:
+        # O objeto não existe no S3
+        return False
 
 def get_s3_objects(s3_client, bucket, prefix=''):
-    """Retorna uma lista de objetos dentro do bucket e prefixo especificado,
-       excluindo chaves que representam 'pastas'."""
-    objects = []
+    objects_with_hash = {}
     response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)
     if 'Contents' in response:
-        # Filtra os objetos para excluir chaves que terminam com '/'
-        objects = [obj['Key'] for obj in response['Contents'] if not obj['Key'].endswith('/')]
-    return objects
+        for obj in response['Contents']:
+            obj_key = obj['Key']
+            if not obj_key.endswith('/'):  # Ignora "pastas"
+                # Supõe que o hash está armazenado nos metadados do objeto
+                meta = s3_client.head_object(Bucket=bucket, Key=obj_key)
+                obj_hash = meta['Metadata'].get('hash', '')  # Substitua 'filehash' pelo nome real da chave de metadados
+                objects_with_hash[obj_key] = obj_hash
+    return objects_with_hash
 
-def sync_to_s3(s3_client, files, bucket, local_path):
+
+def sync_to_s3(s3_client, files, bucket):
     """Sincroniza arquivos locais com o bucket S3, fazendo upload de novos arquivos e removendo os obsoletos."""
-    for file in files['upload']:
-        upload_file(s3_client, file, bucket, local_path)
+    for file, metadata in files['upload'].items():
+        upload_file(s3_client, file, bucket, metadata)
     for file in files['remove']:
         remove_file_from_s3(s3_client, file, bucket)
 
-def upload_file(s3_client, filename, bucket, local_path):
+def upload_file(s3_client, filename, bucket, metadata: dict[str]):
     """Faz o upload de um arquivo para o S3."""
+    key = metadata["virtual_path"]
     try:
-        full_path = os.path.join(local_path, filename)
-        s3_client.upload_file(full_path, bucket, filename)
-        print(f"Uploaded {filename} to s3://{bucket}/{filename}")
+        with open(filename, 'rb') as f:
+            s3_client.upload_fileobj(
+                Fileobj=f,
+                Bucket=bucket,
+                Key=key,
+                ExtraArgs={'Metadata': {'hash': metadata["hash"]}}
+            )
+        print(f"Uploaded {filename} to s3://{bucket}/{key}")
         actions["Uploaded"].append(filename)
     except Exception as e:
         print(f"Failed to upload {filename}: {e}")
@@ -84,23 +104,35 @@ def remove_file_from_s3(s3_client, filename, bucket):
     except Exception as e:
         print(f"Failed to remove {filename}: {e}")
 
-def args():
-    parser = argparse.ArgumentParser(description='Sincroniza certificados .pem com um bucket S3.')
-    parser.add_argument('pais', type=str, help='Pais')
-    parser.add_argument('ambiente', type=str, help='Ambiente')
-    return parser.parse_args()
-
 def upload_certificates(s3_client, bucket_name, local_path, extension, s3_prefix=''):
-    local_files = set(find_files(local_path, extension, s3_folder=s3_prefix))
-    s3_files = set(get_s3_objects(s3_client, bucket_name, s3_prefix))
-    # print(local_files)
-    # print(s3_files)
-    files_to_sync = {
-            'upload': local_files - s3_files,
-            'remove': s3_files - local_files
-        }
 
-    sync_to_s3(s3_client, files_to_sync, bucket_name, local_path)
+    local_files = find_files(local_path, extension, folder=s3_prefix)
+
+    s3_files = get_s3_objects(s3_client, bucket_name, s3_prefix)
+ 
+    files_to_sync = {
+            'upload': uploading(local_files, s3_files),
+            'remove': removing(local_files, s3_files)
+    }
+
+    sync_to_s3(s3_client, files_to_sync, bucket_name)
+
+def removing(local_files, s3_files):
+    # Constrói um conjunto de 'virtual_path' a partir de 'local_files'
+    local_virtual_paths = {metadata["virtual_path"] for metadata in local_files.values()}
+    
+    # Retorna um conjunto de nomes de arquivos em 's3_files' que não possuem correspondência em 'local_virtual_paths'
+    return {fname for fname in s3_files if fname not in local_virtual_paths}
+
+def uploading(local_files, s3_files):
+    """
+    Retorna um dicionário de arquivos locais marcados para upload, baseado na inexistência
+    ou diferença de hash entre os arquivos locais e os do S3.
+    """
+    return {
+        fname: metadata for fname, metadata in local_files.items()
+        if metadata["virtual_path"] not in s3_files or metadata["hash"] != s3_files.get(metadata["virtual_path"], "")
+    }
 
 def main():
     
