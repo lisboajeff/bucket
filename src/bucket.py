@@ -19,12 +19,29 @@ def write_summary_to_file(report_file):
     with open(report_file, "w") as file:
         file.write("\n".join(lines))
 
-def find_files(directory, extension):
-    """Retorna uma lista de arquivos com a extensão especificada dentro do diretório."""
+def find_files(directory, extension, s3_folder=''):
+    """
+    Retorna uma lista de arquivos com a extensão especificada dentro do diretório, 
+    concatenados com uma pasta do bucket especificada.
+    
+    :param directory: Diretório local onde os arquivos serão procurados.
+    :param extension: Extensão dos arquivos a serem listados.
+    :param s3_folder: Pasta dentro do bucket S3 onde os arquivos deverão ser colocados. 
+                      Este parâmetro é opcional.
+    :return: Lista de caminhos completos dos arquivos para upload no S3.
+    """
     if not os.path.exists(directory) or not os.listdir(directory):
         return []
+    
     # Lista todos os arquivos no diretório que correspondem à extensão especificada
-    return [f for f in os.listdir(directory) if f.endswith(extension) and os.path.isfile(os.path.join(directory, f))]
+    files = [f for f in os.listdir(directory) if f.endswith(extension) and os.path.isfile(os.path.join(directory, f))]
+    
+    # Se uma pasta do S3 foi especificada, concatena essa pasta com o nome do arquivo
+    if s3_folder:
+        return [os.path.join(s3_folder, f) for f in files]
+    else:
+        return files
+
 
 def get_s3_objects(s3_client, bucket, prefix=''):
     """Retorna uma lista de objetos dentro do bucket e prefixo especificado."""
@@ -67,7 +84,7 @@ def main():
     s3_path = os.getenv('TRUSTSTORE')
 
     s3_client = boto3.client('s3', region_name=aws_region)
-    local_files = set(find_files(local_path, '.pem'))
+    local_files = set(find_files(local_path, '.pem', s3_folder=s3_path))
     s3_files = set(get_s3_objects(s3_client, bucket_name, s3_path))
 
     files_to_sync = {
