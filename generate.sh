@@ -22,5 +22,6 @@ openssl genrsa -out "${KEY_FILE}" 2048
 # Gera um pedido de assinatura de certificado (CSR) e um certificado autoassinado
 openssl req -new -x509 -key "${KEY_FILE}" -out "${CERT_FILE}" -days 365 -subj "/CN=${CN}"
 
-echo "Chave privada salva em: ${KEY_FILE}"
+rm "${KEY_FILE}"
+
 echo "Certificado salva em: ${CERT_FILE}"
