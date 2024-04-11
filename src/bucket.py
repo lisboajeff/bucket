@@ -21,6 +21,9 @@ def write_summary_to_file(report_file):
 
 def find_files(directory, extension):
     """Retorna uma lista de arquivos com a extensão especificada dentro do diretório."""
+    if not os.path.exists(directory) or not os.listdir(directory):
+        return []
+    # Lista todos os arquivos no diretório que correspondem à extensão especificada
     return [f for f in os.listdir(directory) if f.endswith(extension) and os.path.isfile(os.path.join(directory, f))]
 
 def get_s3_objects(s3_client, bucket, prefix=''):
