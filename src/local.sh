@@ -13,6 +13,7 @@ if [ "$#" -ne 2 ]; then
 fi
 
 PAIS=$1
+
 AMBIENTE=$2
 
 # Caminho para o arquivo de configuração
@@ -24,23 +25,25 @@ if [ ! -f "$CONFIG_PATH" ]; then
     exit 1
 fi
 
+VENV="/tmp/python_bucket_ambiente"
+
 # Cria um ambiente virtual chamado 'local' se ele não existir
-if [ ! -d "local" ]; then
-    python3 -m venv local
-    echo "Ambiente virtual 'local' criado."
+if [ ! -d "$VENV" ]; then
+    python3 -m venv "$VENV"
+    echo "Ambiente virtual '$VENV' criado."
 else
-    echo "O ambiente virtual 'local' já existe."
+    echo "O ambiente virtual '$VENV' já existe."
 fi
 
 # Ativa o ambiente virtual
-source local/bin/activate
+source "$VENV/bin/activate"
 
 # Instala as dependências do arquivo requirements.txt
-if [ ! -f "requirements.txt" ]; then
+if [ ! -f "src/requirements.txt" ]; then
     echo "Arquivo requirements.txt não encontrado."
     exit 1
 else
-    pip install -r requirements.txt
+    pip install -r src/requirements.txt
 fi
 
 # Carrega as variáveis de ambiente do arquivo CONFIG

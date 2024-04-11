@@ -30,7 +30,8 @@ Para executar o script, use o seguinte comando:
 PAIS="Brasil"
 AMBIENTE="DEV"
 CERTIFICATE="env/$PAIS/$AMBIENTE/certificates"
-bash generate.sh "projeto.corp" $CERTIFICATE/ssl "crt"
-bash generate.sh "client" $CERTIFICATE/truststore "pem"
-python3 src/bucket.py "$PAIS" "$AMBIENTE"
+bash src/generate.sh "projeto.corp" $CERTIFICATE/ssl "crt"
+bash src/generate.sh "client" $CERTIFICATE/truststore "pem"
+bash src/local.sh "$PAIS" "$AMBIENTE"
+rm s3_sync_report.md
 ```
