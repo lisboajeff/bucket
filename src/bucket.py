@@ -1,50 +1,85 @@
 import os
 import boto3
-from botocore.exceptions import NoCredentialsError
 
-def list_local_files(local_path):
-    """Lista todos os arquivos .pem no diretório local."""
-    return [f for f in os.listdir(local_path) if os.path.isfile(os.path.join(local_path, f)) and f.endswith('.pem')]
+actions = {"Uploaded": [], "Removed": []}
 
-def list_s3_files(s3_client, bucket_name, prefix=''):
-    """Lista todos os arquivos no diretório especificado do bucket S3."""
-    s3_files = []
-    response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
-    # Verifica se 'Contents' está na resposta
+def write_summary_to_file(report_file):
+    """Escreve o resumo das ações realizadas em formato de tabela em um arquivo."""
+
+    with open(report_file, "w") as file:
+
+        if not actions["Uploaded"] and not actions["Removed"]:
+            file.write("Nenhum arquivo foi adicionado ou removido.\n")
+        else:
+            # Cabeçalho da Tabela
+            file.write(f"{'Ação':<15}{'Nome do Arquivo'}\n")
+            file.write(f"{'-'*15}{'-'*50}\n")
+
+            # Linhas para Arquivos Carregados
+            for filename in actions["Uploaded"]:
+                file.write(f"{'Uploaded':<15}{filename}\n")
+
+            # Linhas para Arquivos Removidos
+            for filename in actions["Removed"]:
+                file.write(f"{'Removed':<15}{filename}\n")
+
+def find_files(directory, extension):
+    """Retorna uma lista de arquivos com a extensão especificada dentro do diretório."""
+    return [f for f in os.listdir(directory) if f.endswith(extension) and os.path.isfile(os.path.join(directory, f))]
+
+def get_s3_objects(s3_client, bucket, prefix=''):
+    """Retorna uma lista de objetos dentro do bucket e prefixo especificado."""
+    objects = []
+    response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)
     if 'Contents' in response:
-        for obj in response['Contents']:
-            s3_files.append(obj['Key'])
-    return s3_files
+        objects = [obj['Key'] for obj in response['Contents']]
+    return objects
 
-def upload_files_to_s3(s3_client, files, bucket_name, s3_path, local_path):
-    """Faz o upload dos arquivos para o bucket S3."""
-    for file in files:
-        try:
-            s3_client.upload_file(os.path.join(local_path, file), bucket_name, os.path.join(s3_path, file))
-            print(f"Uploaded {file} to s3://{bucket_name}/{s3_path}/{file}")
-        except NoCredentialsError:
-            print("Credentials not available")
+def sync_to_s3(s3_client, files, bucket, s3_path, local_dir):
+    """Sincroniza arquivos locais com o bucket S3, fazendo upload de novos arquivos e removendo os obsoletos."""
+    for file in files['upload']:
+        upload_file(s3_client, file, bucket, s3_path, local_dir)
+    for file in files['remove']:
+        remove_file_from_s3(s3_client, file, bucket, s3_path)
+
+def upload_file(s3_client, filename, bucket, s3_path, local_dir):
+    """Faz o upload de um arquivo para o S3."""
+    try:
+        full_path = os.path.join(local_dir, filename)
+        s3_client.upload_file(full_path, bucket, os.path.join(s3_path, filename))
+        print(f"Uploaded {filename} to s3://{bucket}/{s3_path}/{filename}")
+        actions["Uploaded"].append(filename)
+    except Exception as e:
+        print(f"Failed to upload {filename}: {e}")
+
+def remove_file_from_s3(s3_client, filename, bucket, s3_path):
+    """Remove um arquivo do S3."""
+    try:
+        s3_client.delete_object(Bucket=bucket, Key=os.path.join(s3_path, filename))
+        print(f"Removed {filename} from s3://{bucket}/{os.path.join(s3_path, filename)}")
+        actions["Removed"].append(filename)
+    except Exception as e:
+        print(f"Failed to remove {filename}: {e}")
 
 def main():
-    aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
-    aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
     aws_region = os.getenv('AWS_REGION')
     bucket_name = os.getenv('BUCKET_NAME')
     local_path = 'certificates'
     s3_path = os.getenv('TRUSTSTORE')
 
-    # Configura o cliente S3
-    s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id,
-                             aws_secret_access_key=aws_secret_access_key, region_name=aws_region)
+    s3_client = boto3.client('s3', region_name=aws_region)
+    local_files = set(find_files(local_path, '.pem'))
+    s3_files = set(get_s3_objects(s3_client, bucket_name, s3_path))
 
-    local_files = set(list_local_files(local_path))
-    s3_files = set([os.path.basename(key) for key in list_s3_files(s3_client, bucket_name, s3_path)])
-    new_files = local_files - s3_files
+    files_to_sync = {
+        'upload': local_files - s3_files,
+        'remove': s3_files - local_files
+    }
 
-    if new_files:
-        upload_files_to_s3(s3_client, new_files, bucket_name, s3_path, local_path)
-    else:
-        print("No new files to upload.")
+    sync_to_s3(s3_client, files_to_sync, bucket_name, s3_path, local_path)
+
+    report_file = "s3_sync_report.txt"
+    write_summary_to_file(report_file)
 
 if __name__ == "__main__":
     main()
