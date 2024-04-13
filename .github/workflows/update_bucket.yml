@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Use action defined in action.yml
-        uses: lisboajeff/bucket_python
+        uses: lisboajeff/bucket_python@main
         with:
           country: "${{ github.event.inputs.country }}"
           environment: "${{ github.event.inputs.environment }}"
