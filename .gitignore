@@ -1,4 +1,4 @@
-local/
-credentials.sh
+.credentials.sh
+.local.env
 s3_sync_report.md
 .idea

@@ -45,4 +45,4 @@ if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
 echo "AWS Access Key ID and/or AWS Secret Access Key have not been set as environment variables."   exit 1
 fi
 
-python3 src/main.py "$COUNTRY" "$ENVIRONMENT"
+python3 src/main/main.py "$COUNTRY" "$ENVIRONMENT"

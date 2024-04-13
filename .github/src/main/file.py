@@ -1,7 +1,7 @@
 import hashlib
 import os
 
-from src.info import FileInfo
+from info import FileInfo
 
 
 class Device:
@@ -51,7 +51,7 @@ class Device:
         return sha256_hash.hexdigest()
 
     def find_files(self, file_extension: str, folder: str = ''):
-        path: str = f'{self.path}/{folder}'
+        path: str = os.path.join(self.path, folder)
         files_with_hash: dict[str, FileInfo] = {}
         if not os.path.exists(path) or not os.listdir(path):
             return files_with_hash
@@ -60,5 +60,5 @@ class Device:
             if f.endswith(file_extension) and os.path.isfile(full_path):
                 file_hash = self._determine_sha256_hash(full_path)
                 files_with_hash[full_path] = FileInfo(file_hash=file_hash,
-                                                      file_path=f'{folder}/{os.path.basename(full_path)}')
+                                                      virtual_path=f"{folder}/{os.path.basename(full_path)}")
         return files_with_hash

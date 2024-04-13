@@ -1,4 +1,6 @@
-from src.info import FileInfo
+from botocore.client import BaseClient
+
+from info import FileInfo
 
 
 class S3:
@@ -29,10 +31,10 @@ class S3:
 
     """
 
-    def __init__(self, s3_client, bucket_name: str, actions: dict[str, list]):
-        self.s3_client = s3_client
-        self.bucket_name = bucket_name
-        self.actions = actions
+    def __init__(self, s3_client: BaseClient, bucket_name: str, actions: dict[str, list]):
+        self.s3_client: BaseClient = s3_client
+        self.bucket_name: str = bucket_name
+        self.actions: dict[str, list] = actions
 
     def get_hashed_s3_objects(self, folder: str = '') -> dict[str, str]:
         objects_with_hash: dict[str, str] = {}
@@ -48,15 +50,16 @@ class S3:
 
     def upload_to_bucket(self, filename: str, info: FileInfo):
         try:
+            key: str = info.virtual_path
             with open(filename, 'rb') as f:
                 self.s3_client.upload_fileobj(
                     Fileobj=f,
                     Bucket=self.bucket_name,
-                    Key=info.file_path,
+                    Key=key,
                     ExtraArgs={'Metadata': {'hash': info.file_hash}}
                 )
-            print(f"Uploaded {filename} to s3://{self.bucket_name}/{info.file_path}")
-            self.actions["Uploaded"].append(info.file_path)
+            print(f"Uploaded {filename} to s3://{self.bucket_name}/{key}")
+            self.actions["Uploaded"].append(key)
         except Exception as e:
             self._log_action_error("upload", filename, e)
 

@@ -5,16 +5,16 @@ from typing import Any
 
 import boto3
 
-from src.certificate import Certificate
-from src.file import Device
-from src.s3 import S3
+from certificate import Certificate
+from file import Device
+from s3 import S3
 
 
 def parse_args():
     parser: ArgumentParser = argparse.ArgumentParser(description="Synchronizes .pem certificates with an S3 bucket.")
     parser.add_argument('country', type=str, help='Country')
     parser.add_argument('environment', type=str, help='Environment')
-    return parse_args()
+    return parser.parse_args()
 
 
 def main():
@@ -42,7 +42,7 @@ def main():
                 actions=actions)
 
     device: Device = Device(actions=actions,
-                            path=f'env/{input_args["country"]}/{input_args["environment"]}/certificates')
+                            path=os.path.join("env", input_args.country, input_args.environment, "certificates"))
 
     certificate: Certificate = Certificate(s3=s3, device=device)
 

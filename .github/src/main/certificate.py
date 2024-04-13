@@ -1,6 +1,6 @@
-from src.file import Device
-from src.info import FileInfo
-from src.s3 import S3
+from file import Device
+from info import FileInfo
+from s3 import S3
 
 
 class Certificate:
@@ -66,14 +66,14 @@ class Certificate:
 
     @staticmethod
     def _find_missing_files(local_files: dict[str, FileInfo], s3_files: dict[str, str]) -> set[str]:
-        local_virtual_paths: set[str] = {info.file_path for info in local_files.values()}
+        local_virtual_paths: set[str] = {info.virtual_path for info in local_files.values()}
         return {object_name for object_name in s3_files if object_name not in local_virtual_paths}
 
     @staticmethod
     def _detect_modified_files(local_files: dict[str, FileInfo], s3_files: dict[str, str]) -> dict[str, FileInfo]:
         modified_files: dict[str, FileInfo] = {}
         for object_name, metadata in local_files.items():
-            if metadata.file_path not in s3_files or not metadata.is_file_hash_match(
-                    s3_files[metadata.file_path]):
+            if metadata.virtual_path not in s3_files or not metadata.is_file_hash_match(
+                    s3_files[metadata.virtual_path]):
                 modified_files[object_name] = metadata
         return modified_files
