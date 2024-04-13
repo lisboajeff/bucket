@@ -4,6 +4,7 @@ import boto3
 
 from certificate import Certificate
 from file import Device
+from info import FileInfo
 from s3 import S3
 
 
@@ -14,7 +15,7 @@ def main():
 
     path_to_certificate: str = os.getenv('PATH_TO_CERTIFICATE')
 
-    actions: dict[str, list[str]] = {"Uploaded": [], "Removed": []}
+    actions: dict[str, list[FileInfo]] = {"Uploaded": [], "Removed": []}
 
     s3: S3 = S3(s3_client=boto3.client('s3', region_name=aws_region), bucket_name=bucket_name,
                 actions=actions)

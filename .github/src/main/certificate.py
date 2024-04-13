@@ -66,7 +66,7 @@ class Certificate:
 
     @staticmethod
     def _find_missing_files(local_files: dict[str, FileInfo], s3_files: dict[str, str]) -> set[FileInfo]:
-        local_virtual_paths = {info.virtual_path for info in local_files.values()}
+        local_virtual_paths = {info.get_path() for info in local_files.values()}
         temp = {key: value for key, value in s3_files.items() if key not in local_virtual_paths}
         return {FileInfo(file_hash=value, virtual_path=key) for key, value in temp.items()}
 
@@ -74,10 +74,10 @@ class Certificate:
     def _detect_modified_files(local_files: dict[str, FileInfo], s3_files: dict[str, str]) -> dict[str, FileInfo]:
         modified_files: dict[str, FileInfo] = {}
         for object_name, metadata in local_files.items():
-            if metadata.virtual_path not in s3_files:
+            if metadata.get_path() not in s3_files:
                 modified_files[object_name] = metadata
-            elif not metadata.is_file_hash_match(s3_files[metadata.virtual_path]):
-                modified_files[object_name] = FileInfo(file_hash=metadata.virtual_path,
-                                                       virtual_path=metadata.virtual_path,
-                                                       file_hash_old=s3_files[metadata.virtual_path])
+            elif not metadata.is_file_hash_match(s3_files[metadata.get_path()]):
+                modified_files[object_name] = FileInfo(file_hash=metadata.get_hash(),
+                                                       virtual_path=metadata.get_path(),
+                                                       file_hash_old=s3_files[metadata.get_path()])
         return modified_files

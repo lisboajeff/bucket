@@ -50,13 +50,13 @@ class S3:
 
     def upload_to_bucket(self, filename: str, info: FileInfo):
         try:
-            key: str = info.virtual_path
+            key: str = info.get_path()
             with open(filename, 'rb') as f:
                 self.s3_client.upload_fileobj(
                     Fileobj=f,
                     Bucket=self.bucket_name,
                     Key=key,
-                    ExtraArgs={'Metadata': {'hash': info.file_hash}}
+                    ExtraArgs={'Metadata': {'hash': info.get_hash()}}
                 )
             print(f"Uploaded {filename} to s3://{self.bucket_name}/{key}")
             self.actions["Uploaded"].append(info)
@@ -64,7 +64,7 @@ class S3:
             self._log_action_error("upload", filename, e)
 
     def delete_object(self, info: FileInfo):
-        key: str = info.virtual_path
+        key: str = info.get_path()
         try:
             self.s3_client.delete_object(Bucket=self.bucket_name, Key=key)
             print(f"Removed {key} from s3://{self.bucket_name}/{key}")

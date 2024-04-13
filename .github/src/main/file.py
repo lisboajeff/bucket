@@ -24,40 +24,34 @@ class Device:
         self.actions = actions
         self.path = path
 
-    @staticmethod
-    def _format_upload(info: FileInfo) -> str:
-        if info.file_hash_old is not None:
-            return f"| Uploaded    | {info.virtual_path} | {info.file_hash_old} --> {info.file_hash}"
-        else:
-            return f"| Uploaded    | {info.virtual_path} | {info.file_hash}"
-
     def _format_summary(self):
         lines: list[str] = []
         if not self.actions["Uploaded"] and not self.actions["Removed"]:
             lines.append("No file was added or removed.")
         else:
-            lines.append("| Action     | File Name | Hash")
-            lines.append("|------------|-----------------| ------")
+            lines.append("| Action     | File Name | Old Hash | New Hash")
+            lines.append("|------------|-----------------| ------ | ---")
             for info in self.actions["Uploaded"]:
-                lines.append(self._format_upload(info))
+                lines.append(f"| Uploaded    | {info.get_path()} | {info.get_old_hash()} | {info.get_hash()}")
             for info in self.actions["Removed"]:
-                lines.append(f"| Removed     | {info.virtual_path} |  {info.file_hash}")
+                lines.append(f"| Removed     | {info.get_path()} | {info.get_old_hash()} | {info.get_hash()}")
         return lines
 
     def write_summary_to_file(self, summary_file: str):
         lines = self._format_summary()
+        print("\n".join(lines))
         with open(summary_file, "w") as file:
             file.write("\n".join(lines))
 
     @staticmethod
-    def _determine_sha256_hash(full_path: str):
+    def _determine_sha256_hash(full_path: str) -> str:
         sha256_hash = hashlib.sha256()
         with open(full_path, "rb") as f:
             for byte_block in iter(lambda: f.read(4096), b""):
                 sha256_hash.update(byte_block)
         return sha256_hash.hexdigest()
 
-    def find_files(self, file_extension: str, folder: str = ''):
+    def find_files(self, file_extension: str, folder: str = '') -> dict[str, FileInfo]:
         path: str = os.path.join(self.path, folder)
         files_with_hash: dict[str, FileInfo] = {}
         if not os.path.exists(path) or not os.listdir(path):
