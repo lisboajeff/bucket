@@ -1,7 +1,6 @@
 import argparse
 import os
 from argparse import Namespace, ArgumentParser
-from typing import Any
 
 import boto3
 

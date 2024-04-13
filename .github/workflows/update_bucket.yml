@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       country:
-        description: 'Escolha o pais: Brasil'
+        description: 'Select the country: Brasil'
         required: true
         default: 'Brasil'
       environment:
-        description: 'Escolha o environment: DEV'
+        description: 'Select the environment: DEV'
         required: true
         default: 'DEV'
 
@@ -19,30 +19,30 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Carregar Configurações do environment
+      - name: Load Environment Configurations
         run: |
           chmod +x .github/scripts/env.sh
           .github/scripts/env.sh env/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/config.env
 
-      - name: Verificar estrutura de diretórios e arquivo de configuração
+      - name: Verify Directory Structure and Configuration File
         run: |
           if [ ! -f "env/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/config.env" ]; then
-            echo "Erro: arquivo config.env não encontrado." >> $GITHUB_STEP_SUMMARY
+            echo "Error: config.env file not found." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
           if [ ! -d "env/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates/${{ env.TRUSTSTORE }}" ]; then
-            echo "Erro: diretório certificates/${{ env.TRUSTSTORE }} não encontrado." >> $GITHUB_STEP_SUMMARY
+            echo "Error: certificates/${{ env.TRUSTSTORE }} directory not found." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
           if [ ! -d "env/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates/${{ env.TLS }}" ]; then
-            echo "Erro: diretório certificates/${{ env.TLS }} não encontrado." >> $GITHUB_STEP_SUMMARY
+            echo "Error: certificates/${{ env.TLS }} directory not found." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-          echo "Todas as verificações de estrutura de diretórios passaram com sucesso."
+          echo "All directory structure checks have passed successfully."
 
-      - name: Verificar variáveis no config.env
+      - name: Verify variables in config.env
         env:
           REQUIRED_VARS: "AWS_REGION BUCKET_NAME TRUSTSTORE TLS"
         run: |
@@ -54,11 +54,11 @@ jobs:
             fi
           done  
           if [ ${#MISSING_VARS[@]} -ne 0 ]; then
-            echo "Erro: As seguintes variáveis estão faltando no config.env: ${MISSING_VARS[*]}" >> $GITHUB_STEP_SUMMARY
+            echo "Error: The following variables are missing in config.env: ${MISSING_VARS[*]}" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-  
-          echo "Todas as variáveis necessárias estão definidas no config.env."
+
+          echo "All necessary variables are defined in config.env."
 
       - name: Set up Python
         uses: actions/setup-python@v3
