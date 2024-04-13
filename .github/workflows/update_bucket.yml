@@ -14,11 +14,9 @@ on:
 
 jobs:
   sync_certificates:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Synchronize Certificates
-        uses: lisboajeff/bucket_python/.github/workflows@test
-        with:
-          country: "${{ github.event.inputs.country }}"
-          environment: "${{ github.event.inputs.environment }}"
-          certificates: "${{ github.workspace }}/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates"
+    uses: lisboajeff/bucket_python/.github/workflows/action.yml@test
+    with:
+      country: "${{ github.event.inputs.country }}"
+      environment: "${{ github.event.inputs.environment }}"
+      certificates: "${{ github.workspace }}/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates"
+    secrets: inherit
