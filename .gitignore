@@ -2,4 +2,4 @@
 .local.env
 s3_sync_report.md
 .idea
-.github/src/main/__pycache__
+src/main/__pycache__
