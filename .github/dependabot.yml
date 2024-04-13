@@ -5,11 +5,7 @@
 
 version: 2
 updates:
-  - package-ecosystem: "" # See documentation for possible values
-    directory: ".github/src" # Location of package manifests
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "" # See documentation for possible values
-    directory: ".github/scripts" # Location of package manifests
+  - package-ecosystem: "pip" # Adicione o sistema de pacote correspondente aqui
+    directory: "/.github/src" # Ajuste o diretório conforme necessário
     schedule:
       interval: "weekly"
