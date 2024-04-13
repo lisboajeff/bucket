@@ -15,9 +15,10 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     env:
       PATH_TO_ENV: "${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}"
-      PATH_TO_CERTIFICATE: "${{ env.PATH_TO_ENV }}/certificates"
+      PATH_TO_CERTIFICATE: "${PATH_TO_ENV}/certificates"
     steps:
       - uses: actions/checkout@v2
 
@@ -33,12 +34,12 @@ jobs:
             exit 1
           fi
 
-          if [ ! -d "${{PATH_TO_CERTIFICATE }}/${{ env.TRUSTSTORE }}" ]; then
+          if [ ! -d "${{ env.PATH_TO_CERTIFICATE }}/${{ env.TRUSTSTORE }}" ]; then
             echo "Error: certificates/${{ env.TRUSTSTORE }} directory not found." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
-          if [ ! -d "${{PATH_TO_CERTIFICATE }}/${{ env.TLS }}" ]; then
+          if [ ! -d "${{ env.PATH_TO_CERTIFICATE }}/${{ env.TLS }}" ]; then
             echo "Error: certificates/${{ env.TLS }} directory not found." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
