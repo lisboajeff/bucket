@@ -41,11 +41,11 @@ AWS CLI or an AWS configuration file.
 2. **To execute the script, use the following command:**
 
 ```bash
-COUNTRY="Brazil"
+COUNTRY="Brasil"
 ENVIRONMENT="DEV"
 CERTIFICATE="$COUNTRY/$ENVIRONMENT/certificates"
-bash src/script/generate_certificate.sh "projeto.corp" $CERTIFICATE/ssl "crt"
-bash src/script/generate_certificate.sh "client" $CERTIFICATE/truststore "pem"
-bash src/script/local.sh "$COUNTRY" "$ENVIRONMENT"
+bash src/scripts/generate_certificate.sh "projeto.corp" $CERTIFICATE/ssl "crt"
+bash src/scripts/generate_certificate.sh "client" $CERTIFICATE/truststore "pem"
+bash src/scripts/local.sh "$COUNTRY" "$ENVIRONMENT"
 rm s3_sync_report.md
 ```
