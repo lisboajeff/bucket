@@ -15,14 +15,9 @@ on:
 jobs:
   sync_certificates:
     runs-on: ubuntu-latest
-    env:
-      PATH_TO_ENV: "${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}"
-      PATH_TO_CERTIFICATE: "${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates"
-      COUNTRY: "${{ github.event.inputs.country }}"
-      ENVIRONMENT: "${{ github.event.inputs.environment }}"
     steps:
       - uses: lisboajeff/bucket_python@main
         with:
-          country: ${{ env.COUNTRY }}
-          environment: ${{ env.ENVIRONMENT }}
-          certificates: "${{ github.workspace }}/${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/certificates"
+          country: "${{ github.event.inputs.country }}"
+          environment: "${{ github.event.inputs.environment }}"
+          certificates: "${{ github.workspace }}/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates"
