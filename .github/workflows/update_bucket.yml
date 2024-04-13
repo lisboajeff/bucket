@@ -61,9 +61,9 @@ jobs:
           echo "Todas as variáveis necessárias estão definidas no config.env."
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
-          python-version: '3.8'
+          python-version: '3.12'
 
       - name: Install Boto3
         run: pip install -r .github/src/requirements.txt
