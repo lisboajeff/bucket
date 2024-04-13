@@ -37,7 +37,8 @@ class Device:
                 lines.append(
                     f"| Uploaded    | {self.country} | {self.environment} | {info.get_path()} | {info.get_old_hash()} | {info.get_hash()}")
             for info in self.actions["Removed"]:
-                lines.append(f"| Removed     | {info.get_path()} | {info.get_old_hash()} | {info.get_hash()}")
+                lines.append(
+                    f"| Removed     | {self.country} | {self.environment} | {info.get_path()} | {info.get_old_hash()} | {info.get_hash()}")
         return lines
 
     def write_summary_to_file(self, summary_file: str):

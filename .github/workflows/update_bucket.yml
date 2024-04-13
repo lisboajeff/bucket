@@ -18,6 +18,8 @@ jobs:
     env:
       PATH_TO_ENV: "${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}"
       PATH_TO_CERTIFICATE: "${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates"
+      COUNTRY: "${{ github.event.inputs.country }}"
+      ENVIRONMENT: "${{ github.event.inputs.environment }}"
     steps:
       - uses: actions/checkout@v2
 
