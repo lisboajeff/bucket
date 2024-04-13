@@ -15,10 +15,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     env:
       PATH_TO_ENV: "${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}"
-      PATH_TO_CERTIFICATE: "${{ env.PATH_TO_ENV }}/certificates"
+      PATH_TO_CERTIFICATE: "${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates"
     steps:
       - uses: actions/checkout@v2
 
@@ -84,7 +83,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ env.AWS_REGION }}
-          
+
       - name: Publish Report to Job Summary
         run: |
           echo "### S3 Sync Report" >> $GITHUB_STEP_SUMMARY
