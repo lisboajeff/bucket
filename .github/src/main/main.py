@@ -8,9 +8,9 @@ from s3 import S3
 
 
 def main():
-    aws_region = os.getenv('AWS_REGION')
+    aws_region: str = os.getenv('AWS_REGION')
 
-    bucket_name = os.getenv('BUCKET_NAME')
+    bucket_name: str = os.getenv('BUCKET_NAME')
 
     path_to_certificate: str = os.getenv('PATH_TO_CERTIFICATE')
 
