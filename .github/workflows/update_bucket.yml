@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Synchronize Certificates
-        uses: lisboajeff/bucket_python@main
+        uses: lisboajeff/bucket_python/.github/actions@main
         with:
           country: "${{ github.event.inputs.country }}"
           environment: "${{ github.event.inputs.environment }}"
