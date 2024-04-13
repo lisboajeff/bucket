@@ -19,3 +19,4 @@ jobs:
       country: "${{ github.event.inputs.country }}"
       environment: "${{ github.event.inputs.environment }}"
       certificates: "${{ github.workspace }}/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates"
+    secrets: inherit
