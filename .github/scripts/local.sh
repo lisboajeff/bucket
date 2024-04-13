@@ -2,7 +2,7 @@
 
 COUNTRY=$1
 ENVIRONMENT=$2
-CONFIG_PATH="env/$COUNTRY/$ENVIRONMENT/config.env"
+CONFIG_PATH="$COUNTRY/$ENVIRONMENT/config.env"
 VENV="/tmp/venv_bucket"
 SOURCE=".github/src"
 
