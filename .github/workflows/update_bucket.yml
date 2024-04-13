@@ -16,7 +16,8 @@ jobs:
   sync_certificates:
     runs-on: ubuntu-latest
     steps:
-      - uses: lisboajeff/bucket_python@main
+      - name: Use action defined in action.yml
+        uses: lisboajeff/bucket_python
         with:
           country: "${{ github.event.inputs.country }}"
           environment: "${{ github.event.inputs.environment }}"
