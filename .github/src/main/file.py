@@ -20,7 +20,7 @@ class Device:
 
     """
 
-    def __init__(self, actions: dict[str, list], path: str) -> None:
+    def __init__(self, actions: dict[str, list[str]], path: str):
         self.actions = actions
         self.path = path
 

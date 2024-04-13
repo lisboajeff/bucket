@@ -36,7 +36,7 @@ def main():
     """
     input_args: Namespace = parse_args()
 
-    actions: dict[str, list[Any]] = {"Uploaded": [], "Removed": []}
+    actions: dict[str, list[str]] = {"Uploaded": [], "Removed": []}
 
     s3: S3 = S3(s3_client=boto3.client('s3', region_name=os.getenv('AWS_REGION')), bucket_name=os.getenv('BUCKET_NAME'),
                 actions=actions)

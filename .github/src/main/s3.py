@@ -31,7 +31,7 @@ class S3:
 
     """
 
-    def __init__(self, s3_client: BaseClient, bucket_name: str, actions: dict[str, list]):
+    def __init__(self, s3_client: BaseClient, bucket_name: str, actions: dict[str, list[str]]):
         self.s3_client: BaseClient = s3_client
         self.bucket_name: str = bucket_name
         self.actions: dict[str, list] = actions
