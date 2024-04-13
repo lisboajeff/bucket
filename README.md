@@ -42,7 +42,7 @@ AWS CLI or an AWS configuration file.
 
 ```bash
 COUNTRY="Brasil"
-ENVIRONMENT="DEV"
+ENVIRONMENT="dev"
 CERTIFICATE="$COUNTRY/$ENVIRONMENT/certificates"
 bash src/scripts/generate_certificate.sh "projeto.corp" $CERTIFICATE/ssl "crt"
 bash src/scripts/generate_certificate.sh "client" $CERTIFICATE/truststore "pem"

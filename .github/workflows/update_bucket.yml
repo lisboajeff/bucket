@@ -1,4 +1,4 @@
-name: Deploy Certificates to S3
+name: Synchronize Certificates to S3
 
 on:
   workflow_dispatch:
@@ -8,12 +8,12 @@ on:
         required: true
         default: 'Brasil'
       environment:
-        description: 'Select the environment: DEV'
+        description: 'Select the environment: dev'
         required: true
-        default: 'DEV'
+        default: 'dev'
 
 jobs:
-  deploy:
+  sync_certificates_bucket:
     runs-on: ubuntu-latest
     env:
       PATH_TO_ENV: "${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}"
@@ -21,73 +21,8 @@ jobs:
       COUNTRY: "${{ github.event.inputs.country }}"
       ENVIRONMENT: "${{ github.event.inputs.environment }}"
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Load Environment Configurations
-        run: |
-          chmod +x src/scripts/env.sh
-          src/scripts/env.sh ${{ env.PATH_TO_ENV }}/config.env
-
-      - name: Verify Directory Structure and Configuration File
-        run: |
-          if [ ! -f "${{ env.PATH_TO_ENV }}/config.env" ]; then
-            echo "Error: config.env file not found." >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
-
-          if [ ! -d "${{ env.PATH_TO_CERTIFICATE }}/${{ env.TRUSTSTORE }}" ]; then
-            echo "Error: certificates/${{ env.TRUSTSTORE }} directory not found." >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
-
-          if [ ! -d "${{ env.PATH_TO_CERTIFICATE }}/${{ env.TLS }}" ]; then
-            echo "Error: certificates/${{ env.TLS }} directory not found." >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
-          echo "All directory structure checks have passed successfully."
-
-      - name: Verify variables in config.env
-        env:
-          REQUIRED_VARS: "AWS_REGION BUCKET_NAME TRUSTSTORE TLS"
-        run: |
-          IFS=' ' read -r -a REQUIRED_VARS_ARRAY <<< "$REQUIRED_VARS"
-          MISSING_VARS=()
-          for VAR in "${REQUIRED_VARS_ARRAY[@]}"; do
-            if ! grep -qE "^${VAR}=" ${{ env.PATH_TO_ENV }}/config.env; then
-              MISSING_VARS+=("$VAR")
-            fi
-          done  
-          if [ ${#MISSING_VARS[@]} -ne 0 ]; then
-            echo "Error: The following variables are missing in config.env: ${MISSING_VARS[*]}" >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
-
-          echo "All necessary variables are defined in config.env."
-
-      - name: Set up Python
-        uses: actions/setup-python@v3
+      - uses: lisboajeff/bucket_python@main
         with:
-          python-version: '3.12'
-
-      - name: Install Requirements
-        run: pip install -r src/requirements.txt
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Sync files to S3
-        run: python src/main/main.py
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-
-      - name: Publish Report to Job Summary
-        run: |
-          echo "### S3 Sync Report" >> $GITHUB_STEP_SUMMARY
-          cat s3_sync_report.md >> $GITHUB_STEP_SUMMARY
-        
+          country: ${{ env.COUNTRY }}
+          environment: ${{ env.ENVIRONMENT }}
+          certificates: "${{ github.workspace }}/${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/certificates"
