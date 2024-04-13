@@ -31,7 +31,7 @@ class S3:
 
     """
 
-    def __init__(self, s3_client: BaseClient, bucket_name: str, actions: dict[str, list[str]]):
+    def __init__(self, s3_client: BaseClient, bucket_name: str, actions: dict[str, list[FileInfo]]):
         self.s3_client: BaseClient = s3_client
         self.bucket_name: str = bucket_name
         self.actions: dict[str, list] = actions
@@ -59,17 +59,18 @@ class S3:
                     ExtraArgs={'Metadata': {'hash': info.file_hash}}
                 )
             print(f"Uploaded {filename} to s3://{self.bucket_name}/{key}")
-            self.actions["Uploaded"].append(key)
+            self.actions["Uploaded"].append(info)
         except Exception as e:
             self._log_action_error("upload", filename, e)
 
-    def delete_object(self, filename: str):
+    def delete_object(self, info: FileInfo):
+        key: str = info.virtual_path
         try:
-            self.s3_client.delete_object(Bucket=self.bucket_name, Key=filename)
-            print(f"Removed {filename} from s3://{self.bucket_name}/{filename}")
-            self.actions["Removed"].append(filename)
+            self.s3_client.delete_object(Bucket=self.bucket_name, Key=key)
+            print(f"Removed {key} from s3://{self.bucket_name}/{key}")
+            self.actions["Removed"].append(info)
         except Exception as e:
-            self._log_action_error("remove", filename, e)
+            self._log_action_error("remove", key, e)
 
     @staticmethod
     def _log_action_error(action: str, filename: str, error: Exception):

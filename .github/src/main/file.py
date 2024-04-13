@@ -20,21 +20,28 @@ class Device:
 
     """
 
-    def __init__(self, actions: dict[str, list[str]], path: str):
+    def __init__(self, actions: dict[str, list[FileInfo]], path: str):
         self.actions = actions
         self.path = path
+
+    @staticmethod
+    def _format_upload(info: FileInfo) -> str:
+        if info.file_hash_old is not None:
+            return f"| Uploaded    | {info.virtual_path} | {info.file_hash_old} --> {info.file_hash}"
+        else:
+            return f"| Uploaded    | {info.virtual_path} | {info.file_hash}"
 
     def _format_summary(self):
         lines: list[str] = []
         if not self.actions["Uploaded"] and not self.actions["Removed"]:
             lines.append("No file was added or removed.")
         else:
-            lines.append("| Action     | File Name |")
-            lines.append("|------------|-----------------|")
-            for filename in self.actions["Uploaded"]:
-                lines.append(f"| Uploaded    | {filename} |")
-            for filename in self.actions["Removed"]:
-                lines.append(f"| Removed     | {filename} |")
+            lines.append("| Action     | File Name | Hash")
+            lines.append("|------------|-----------------| ------")
+            for info in self.actions["Uploaded"]:
+                lines.append(self._format_upload(info))
+            for info in self.actions["Removed"]:
+                lines.append(f"| Removed     | {info.virtual_path} |  {info.file_hash}")
         return lines
 
     def write_summary_to_file(self, summary_file: str):

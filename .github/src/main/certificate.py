@@ -54,26 +54,30 @@ class Certificate:
 
         modified_files: dict[str, FileInfo] = self._detect_modified_files(local_files, s3_files)
 
-        missing_files: set[str] = self._find_missing_files(local_files, s3_files)
+        missing_files: set[FileInfo] = self._find_missing_files(local_files, s3_files)
 
         self._manage_files(modified_files=modified_files, missing_files=missing_files)
 
-    def _manage_files(self, modified_files: dict[str, FileInfo], missing_files: set[str]):
+    def _manage_files(self, modified_files: dict[str, FileInfo], missing_files: set[FileInfo]):
         for filename, info in modified_files.items():
             self.s3.upload_to_bucket(filename, info)
-        for filename in missing_files:
-            self.s3.delete_object(filename)
+        for info in missing_files:
+            self.s3.delete_object(info)
 
     @staticmethod
-    def _find_missing_files(local_files: dict[str, FileInfo], s3_files: dict[str, str]) -> set[str]:
-        local_virtual_paths: set[str] = {info.virtual_path for info in local_files.values()}
-        return {object_name for object_name in s3_files if object_name not in local_virtual_paths}
+    def _find_missing_files(local_files: dict[str, FileInfo], s3_files: dict[str, str]) -> set[FileInfo]:
+        local_virtual_paths = {info.virtual_path for info in local_files.values()}
+        temp = {key: value for key, value in s3_files.items() if key not in local_virtual_paths}
+        return {FileInfo(file_hash=value, virtual_path=key) for key, value in temp.items()}
 
     @staticmethod
     def _detect_modified_files(local_files: dict[str, FileInfo], s3_files: dict[str, str]) -> dict[str, FileInfo]:
         modified_files: dict[str, FileInfo] = {}
         for object_name, metadata in local_files.items():
-            if metadata.virtual_path not in s3_files or not metadata.is_file_hash_match(
-                    s3_files[metadata.virtual_path]):
+            if metadata.virtual_path not in s3_files:
                 modified_files[object_name] = metadata
+            elif not metadata.is_file_hash_match(s3_files[metadata.virtual_path]):
+                modified_files[object_name] = FileInfo(file_hash=metadata.virtual_path,
+                                                       virtual_path=metadata.virtual_path,
+                                                       file_hash_old=s3_files[metadata.virtual_path])
         return modified_files
