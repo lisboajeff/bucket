@@ -44,8 +44,8 @@ AWS CLI or an AWS configuration file.
 COUNTRY="Brazil"
 ENVIRONMENT="DEV"
 CERTIFICATE="env/$COUNTRY/$ENVIRONMENT/certificates"
-bash src/generate_certificate.sh "projeto.corp" $CERTIFICATE/ssl "crt"
-bash src/generate_certificate.sh "client" $CERTIFICATE/truststore "pem"
-bash src/local.sh "$COUNTRY" "$ENVIRONMENT"
+bash .github/script/generate_certificate.sh "projeto.corp" $CERTIFICATE/ssl "crt"
+bash .github/script/generate_certificate.sh "client" $CERTIFICATE/truststore "pem"
+bash .github/script/local.sh "$COUNTRY" "$ENVIRONMENT"
 rm s3_sync_report.md
 ```

@@ -4,6 +4,7 @@ COUNTRY=$1
 ENVIRONMENT=$2
 CONFIG_PATH="env/$COUNTRY/$ENVIRONMENT/config.env"
 VENV="/tmp/venv_bucket"
+SOURCE=".github/src"
 
 if ! command -v python3 &> /dev/null; then
     echo "Python 3 is not installed. Install Python 3 to continue."
@@ -24,11 +25,11 @@ fi
 
 source "$VENV/bin/activate"
 
-if [ ! -f "src/requirements.txt" ]; then
+if [ ! -f "$SOURCE/requirements.txt" ]; then
     echo "File requirements.txt not found."
     exit 1
 else
-    pip install -r src/requirements.txt
+    pip install -r "$SOURCE/requirements.txt"
 fi
 
 if [ ! -f "$CONFIG_PATH" ]; then
@@ -45,4 +46,4 @@ if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
 echo "AWS Access Key ID and/or AWS Secret Access Key have not been set as environment variables."   exit 1
 fi
 
-python3 src/main/main.py "$COUNTRY" "$ENVIRONMENT"
+python3 "$SOURCE/main/main.py" "$COUNTRY" "$ENVIRONMENT"
