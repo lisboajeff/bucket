@@ -67,8 +67,8 @@ class Certificate:
     @staticmethod
     def _find_missing_files(local_files: dict[str, FileInfo], s3_files: dict[str, str]) -> set[FileInfo]:
         local_virtual_paths = {info.get_path() for info in local_files.values()}
-        temp = {key: value for key, value in s3_files.items() if key not in local_virtual_paths}
-        return {FileInfo(file_hash=value, virtual_path=key) for key, value in temp.items()}
+        s3_missing_files = {key: value for key, value in s3_files.items() if key not in local_virtual_paths}
+        return {FileInfo(file_hash_old=value, virtual_path=key) for key, value in s3_missing_files.items()}
 
     @staticmethod
     def _detect_modified_files(local_files: dict[str, FileInfo], s3_files: dict[str, str]) -> dict[str, FileInfo]:

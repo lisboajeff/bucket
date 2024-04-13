@@ -1,6 +1,6 @@
 class FileInfo:
 
-    def __init__(self, file_hash: str, virtual_path: str, file_hash_old: str | None = None):
+    def __init__(self, virtual_path: str, file_hash: str | None = None, file_hash_old: str | None = None):
         self._file_hash_old: str | None = file_hash_old
         self._file_hash: str = file_hash
         self._virtual_path: str = virtual_path
