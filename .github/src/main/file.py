@@ -20,19 +20,22 @@ class Device:
 
     """
 
-    def __init__(self, actions: dict[str, list[FileInfo]], path: str):
+    def __init__(self, actions: dict[str, list[FileInfo]], path: str, country: str, environment: str):
         self.actions = actions
         self.path = path
+        self.country = country
+        self.environment = environment
 
     def _format_summary(self):
         lines: list[str] = []
         if not self.actions["Uploaded"] and not self.actions["Removed"]:
             lines.append("No file was added or removed.")
         else:
-            lines.append("| Action     | File Name | Old Hash | New Hash")
-            lines.append("|------------|-----------------| ------ | ---")
+            lines.append("| Action | Country | Environment | File Name | Old Hash | New Hash")
+            lines.append("|---| --- | --- |---| --- | ---")
             for info in self.actions["Uploaded"]:
-                lines.append(f"| Uploaded    | {info.get_path()} | {info.get_old_hash()} | {info.get_hash()}")
+                lines.append(
+                    f"| Uploaded    | {self.country} | {self.environment} | {info.get_path()} | {info.get_old_hash()} | {info.get_hash()}")
             for info in self.actions["Removed"]:
                 lines.append(f"| Removed     | {info.get_path()} | {info.get_old_hash()} | {info.get_hash()}")
         return lines

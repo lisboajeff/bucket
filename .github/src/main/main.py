@@ -13,6 +13,10 @@ def main():
 
     bucket_name: str = os.getenv('BUCKET_NAME')
 
+    country: str = os.getenv('COUNTRY')
+
+    environment: str = os.getenv('ENVIRONMENT')
+
     path_to_certificate: str = os.getenv('PATH_TO_CERTIFICATE')
 
     actions: dict[str, list[FileInfo]] = {"Uploaded": [], "Removed": []}
@@ -20,7 +24,7 @@ def main():
     s3: S3 = S3(s3_client=boto3.client('s3', region_name=aws_region), bucket_name=bucket_name,
                 actions=actions)
 
-    device: Device = Device(actions=actions, path=path_to_certificate)
+    device: Device = Device(actions=actions, path=path_to_certificate, country=country, environment=environment)
 
     certificate: Certificate = Certificate(s3=s3, device=device)
 
