@@ -6,6 +6,6 @@
 version: 2
 updates:
   - package-ecosystem: "pip" # Adicione o sistema de pacote correspondente aqui
-    directory: "/.github/src" # Ajuste o diretório conforme necessário
+    directory: "/src" # Ajuste o diretório conforme necessário
     schedule:
       interval: "weekly"
