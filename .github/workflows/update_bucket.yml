@@ -3,12 +3,12 @@ name: Deploy Certificates to S3
 on:
   workflow_dispatch:
     inputs:
-      pais:
+      country:
         description: 'Escolha o pais: Brasil'
         required: true
         default: 'Brasil'
-      ambiente:
-        description: 'Escolha o ambiente: DEV'
+      environment:
+        description: 'Escolha o environment: DEV'
         required: true
         default: 'DEV'
   
@@ -19,24 +19,24 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Carregar Configurações do Ambiente
+      - name: Carregar Configurações do environment
         run: |
           chmod +x src/env.sh
-          ./src/env.sh env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/config.env
+          ./src/env.sh env/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/config.env
 
       - name: Verificar estrutura de diretórios e arquivo de configuração
         run: |
-          if [ ! -f "env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/config.env" ]; then
+          if [ ! -f "env/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/config.env" ]; then
             echo "Erro: arquivo config.env não encontrado." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
-          if [ ! -d "env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/certificates/${{ env.TRUSTSTORE }}" ]; then
+          if [ ! -d "env/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates/${{ env.TRUSTSTORE }}" ]; then
             echo "Erro: diretório certificates/${{ env.TRUSTSTORE }} não encontrado." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
-          if [ ! -d "env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/certificates/${{ env.TLS }}" ]; then
+          if [ ! -d "env/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates/${{ env.TLS }}" ]; then
             echo "Erro: diretório certificates/${{ env.TLS }} não encontrado." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
@@ -49,7 +49,7 @@ jobs:
           IFS=' ' read -r -a REQUIRED_VARS_ARRAY <<< "$REQUIRED_VARS"
           MISSING_VARS=()
           for VAR in "${REQUIRED_VARS_ARRAY[@]}"; do
-            if ! grep -qE "^${VAR}=" env/${{ github.event.inputs.pais }}/${{ github.event.inputs.ambiente }}/config.env; then
+            if ! grep -qE "^${VAR}=" env/${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/config.env; then
               MISSING_VARS+=("$VAR")
             fi
           done  
@@ -76,7 +76,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Sync new PEM files to S3
-        run: python src/bucket.py ${{ github.event.inputs.pais }} ${{ github.event.inputs.ambiente }}
+        run: python src/main.py ${{ github.event.inputs.country }} ${{ github.event.inputs.environment }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

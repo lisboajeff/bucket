@@ -1,44 +1,79 @@
-from file import Device
-from s3 import S3
+from src.file import Device
+from src.info import FileInfo
+from src.s3 import S3
+
 
 class Certificate:
+    """
+    A class for managing certificate files.
 
-    def __init__(self, s3: S3, device: Device) -> None:
+    Parameters:
+        s3 (S3): The S3 object for interacting with Amazon S3.
+        device (Device): The device object for interacting with the device.
+
+    Attributes:
+        s3 (S3): The S3 object for interacting with Amazon S3.
+        device (Device): The device object for interacting with the device.
+
+    Methods:
+        upload_certificates: Uploads the certificates to S3.
+        _sync_files: Synchronizes the local files with S3.
+        _manage_files: Manages the modified and missing files.
+        _find_missing_files: Finds the missing files.
+        _detect_modified_files: Detects the modified files.
+    """
+
+    def __init__(self, s3: S3, device: Device):
         self.s3 = s3
         self.device = device
 
-    def sincronizar(self, s3_tls_folder: str, s3_truststore_folder: str):
-
-        self.__upload_certificates(extension='.crt', s3_prefix=s3_tls_folder)
-
-        self.__upload_certificates(extension='.pem', s3_prefix=s3_truststore_folder)
-
-    def __upload_certificates(self, extension, s3_prefix=''):
-
-        local_files = self.device.find_files(extension, folder=s3_prefix)
-
-        s3_files = self.s3.get_s3_objects(s3_prefix)
-    
-        files_to_sync = {
-                'upload': self.__uploading(local_files, s3_files),
-                'remove': self.__removing(local_files, s3_files)
-        }
-
-        self.s3.sync_to_s3(files_to_sync)
-
-    def __removing(self, local_files, s3_files):
-        # Constrói um conjunto de 'virtual_path' a partir de 'local_files'
-        local_virtual_paths = {metadata["virtual_path"] for metadata in local_files.values()}
-        
-        # Retorna um conjunto de nomes de arquivos em 's3_files' que não possuem correspondência em 'local_virtual_paths'
-        return {fname for fname in s3_files if fname not in local_virtual_paths}
-
-    def __uploading(self, local_files, s3_files):
+    def upload_certificates(self, keystore_folder: str, truststore_folder: str):
         """
-        Retorna um dicionário de arquivos locais marcados para upload, baseado na inexistência
-        ou diferença de hash entre os arquivos locais e os do S3.
+        Uploads certificates from the provided keystore and truststore folders.
+
+        :param keystore_folder: The path to the folder containing keystore files.
+        :param truststore_folder: The path to the folder containing truststore files.
         """
-        return {
-            fname: metadata for fname, metadata in local_files.items()
-            if metadata["virtual_path"] not in s3_files or metadata["hash"] != s3_files.get(metadata["virtual_path"], "")
-        }
+        self._sync_files(file_extension='.crt', folder=keystore_folder)
+        self._sync_files(file_extension='.pem', folder=truststore_folder)
+
+    def _sync_files(self, file_extension: str, folder: str = ''):
+        """
+
+        Syncs files between local device and AWS S3.
+
+        :param file_extension: The file extension to filter for synchronization.
+        :param folder: Optional. The folder path to synchronize. Defaults to root directory.
+
+        :return: None
+
+        """
+        local_files: dict[str, FileInfo] = self.device.find_files(file_extension, folder=folder)
+
+        s3_files: dict[str, str] = self.s3.get_hashed_s3_objects(folder)
+
+        modified_files: dict[str, FileInfo] = self._detect_modified_files(local_files, s3_files)
+
+        missing_files: set[str] = self._find_missing_files(local_files, s3_files)
+
+        self._manage_files(modified_files=modified_files, missing_files=missing_files)
+
+    def _manage_files(self, modified_files: dict[str, FileInfo], missing_files: set[str]):
+        for filename, info in modified_files.items():
+            self.s3.upload_to_bucket(filename, info)
+        for filename in missing_files:
+            self.s3.delete_object(filename)
+
+    @staticmethod
+    def _find_missing_files(local_files: dict[str, FileInfo], s3_files: dict[str, str]) -> set[str]:
+        local_virtual_paths: set[str] = {info.file_path for info in local_files.values()}
+        return {object_name for object_name in s3_files if object_name not in local_virtual_paths}
+
+    @staticmethod
+    def _detect_modified_files(local_files: dict[str, FileInfo], s3_files: dict[str, str]) -> dict[str, FileInfo]:
+        modified_files: dict[str, FileInfo] = {}
+        for object_name, metadata in local_files.items():
+            if metadata.file_path not in s3_files or not metadata.is_file_hash_match(
+                    s3_files[metadata.file_path]):
+                modified_files[object_name] = metadata
+        return modified_files

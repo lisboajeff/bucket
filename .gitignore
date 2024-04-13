@@ -1,3 +1,4 @@
 local/
 credentials.sh
 s3_sync_report.md
+.idea

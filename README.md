@@ -1,37 +1,51 @@
-# Projeto
+# Project
 
 [![Deploy Certificates to S3](https://github.com/lisboajeff/bucket/actions/workflows/update_bucket.yml/badge.svg)](https://github.com/lisboajeff/bucket/actions/workflows/update_bucket.yml)
 
-# Sincronização de Certificados com S3
+# Synchronization of Certificates with S3
 
-## Descrição
-O script `bucket.py` é uma ferramenta de linha de comando desenvolvida para automatizar o processo de sincronização de certificados `.pem` e `.crt` com um bucket AWS S3. Essencial para manter a segurança e a integridade da comunicação em infraestruturas distribuídas, este script garante que os certificados necessários estejam sempre atualizados e acessíveis no ambiente AWS.
+## Description
 
-## Funcionalidades
-- **Sincronização Automatizada:** Compara certificados locais com os armazenados no S3, realizando upload ou remoção conforme necessário para manter a sincronia.
-- **Geração de Relatório:** Cria um relatório em formato Markdown (`s3_sync_report.md`) detalhando as ações realizadas durante a sincronização, incluindo quais arquivos foram adicionados ou removidos.
-- **Hash de Verificação:** Utiliza hash SHA-256 para verificar a integridade dos arquivos e determinar a necessidade de sincronização.
-- **Flexibilidade de Uso:** Permite a especificação de diferentes ambientes e países para a sincronização de certificados, aumentando a aplicabilidade em cenários multi-regionais.
+The script `bucket.py` is a command-line tool developed to automate the process of synchronizing `.pem` and `.crt`
+certificates with an AWS S3 bucket. Essential for maintaining the security and integrity of communications in
+distributed infrastructures, this script ensures that necessary certificates are always up-to-date and accessible in the
+AWS environment.
 
-## Pré-Requisitos
-Para utilizar este script, é necessário ter instalado:
+## Features
+
+- **Automated Synchronization:** Compares local certificates with those stored in S3, performing uploads or removals as
+  necessary to maintain synchronization.
+- **Report Generation:** Creates a report in Markdown format (`s3_sync_report.md`) detailing the actions performed
+  during synchronization, including which files were added or removed.
+- **Verification Hash:** Uses SHA-256 hash to verify the integrity of the files and determine the need for
+  synchronization.
+- **Usage Flexibility:** Allows the specification of different environments and countries for certificate
+  synchronization, enhancing applicability in multi-regional scenarios.
+
+## Prerequisites
+
+To use this script, you must have installed:
+
 - Python 3
-- Boto3 (SDK da AWS para Python)
+- Boto3 (AWS SDK for Python)
 
-Além disso, é preciso configurar as credenciais da AWS (AWS Access Key ID e AWS Secret Access Key), preferencialmente através do AWS CLI ou arquivo de configuração da AWS.
+Additionally, AWS credentials (AWS Access Key ID and AWS Secret Access Key) must be configured, preferably through the
+AWS CLI or an AWS configuration file.
 
-## Como Usar
-1. **Configuração de Ambiente:**
-   Certifique-se de que as variáveis de ambiente `AWS_REGION`, `BUCKET_NAME`, `TRUSTSTORE` e `TLS` estejam devidamente configuradas para refletir sua infraestrutura AWS.
+## How to Use
 
-2. **Para executar o script, use o seguinte comando:**
+1. **Environment Configuration:**
+   Ensure that the environment variables `AWS_REGION`, `BUCKET_NAME`, `TRUSTSTORE`, and `TLS` are properly configured to
+   reflect your AWS infrastructure.
+
+2. **To execute the script, use the following command:**
 
 ```bash
-PAIS="Brasil"
-AMBIENTE="DEV"
-CERTIFICATE="env/$PAIS/$AMBIENTE/certificates"
-bash src/generate.sh "projeto.corp" $CERTIFICATE/ssl "crt"
-bash src/generate.sh "client" $CERTIFICATE/truststore "pem"
-bash src/local.sh "$PAIS" "$AMBIENTE"
+COUNTRY="Brazil"
+ENVIRONMENT="DEV"
+CERTIFICATE="env/$COUNTRY/$ENVIRONMENT/certificates"
+bash src/generate_certificate.sh "projeto.corp" $CERTIFICATE/ssl "crt"
+bash src/generate_certificate.sh "client" $CERTIFICATE/truststore "pem"
+bash src/local.sh "$COUNTRY" "$ENVIRONMENT"
 rm s3_sync_report.md
 ```
