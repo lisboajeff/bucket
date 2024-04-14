@@ -25,8 +25,8 @@ jobs:
           fi
           COUNTRY=$(echo "$TITLE" | cut -d ' ' -f 2)
           ENVIRONMENT=$(echo "$TITLE" | cut -d ' ' -f 4)
-          echo "{country}={$COUNTRY}" >> $GITHUB_OUTPUT
-          echo "{environment}={$ENVIRONMENT}" >> $GITHUB_OUTPUT
+          echo "country=$COUNTRY" >> $GITHUB_OUTPUT
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
           cat "$GITHUB_OUTPUT"
 
   sync_certificates:
