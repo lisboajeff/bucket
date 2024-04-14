@@ -7,6 +7,9 @@ on:
 jobs:
 
   check-squash-commit-message:
+    outputs:
+      country: ${{ steps.set_vars.outputs.country }}
+      environment: ${{ steps.set_vars.outputs.environment }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -19,14 +22,16 @@ jobs:
             echo "Title message ($TITLE) does not meet the required template"
             exit 1
           fi
-          echo "COUNTRY=$(echo "$m" | cut -d ' ' -f 2)"     >> $GITHUB_ENV
-          echo "ENVIRONMENT=$(echo "$m" | cut -d ' ' -f 4)" >> $GITHUB_ENV
+          COUNTRY=$(echo "$TITLE" | cut -d ' ' -f 2)
+          ENVIRONMENT=$(echo "$TITLE" | cut -d ' ' -f 4)
+          echo "::set-output name=country::$COUNTRY"
+          echo "::set-output name=environment::$ENVIRONMENT"
 
   sync_certificates:
     needs: [ check-squash-commit-message ]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
-      country: "$COUNTRY"
-      environment: "$ENVIRONMENT"
-      certificates: "$COUNTRY/$ENVIRONMENT/certificates"
+      country: "${{ needs.check-squash-commit-message.outputs.country }}"
+      environment: "${{ needs.check-squash-commit-message.outputs.environment }}"
+      certificates: "${{ needs.check-squash-commit-message.outputs.country }}/${{ needs.check-squash-commit-message.outputs.environment }}/certificates"
     secrets: inherit
