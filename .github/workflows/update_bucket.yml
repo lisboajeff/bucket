@@ -19,12 +19,14 @@ jobs:
             echo "Title message ($TITLE) does not meet the required template"
             exit 1
           fi
+          echo "COUNTRY=$(echo "$m" | cut -d ' ' -f 2)"     >> $GITHUB_ENV
+          echo "ENVIRONMENT=$(echo "$m" | cut -d ' ' -f 4)" >> $GITHUB_ENV
 
   sync_certificates:
     needs: [ check-squash-commit-message ]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
-      country: "${{ github.event.inputs.country }}"
-      environment: "${{ github.event.inputs.environment }}"
-      certificates: "${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates"
+      country: "${{ env.COUNTRY }}"
+      environment: "${{ env.ENVIRONMENT }}"
+      certificates: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/certificates"
     secrets: inherit
