@@ -6,29 +6,34 @@ on:
 
 jobs:
 
-  check-squash-commit-message:
+  verifier:
+    outputs:
+      country: ${{ steps.check.outputs.country }}
+      environment: ${{ steps.check.outputs.environment }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Check Commit Message
+      - name: Check Title Message
+        id: check
         run: |
-          SQUASH_MSG=$(git log --format=%B -n 1 HEAD)
-          echo "Squash Commit Message: $SQUASH_MSG"
-          COMMIT_REGEX='^(country): \w{0,20} (environment): \w{0,5} certificates: \[[\w,]{0,50}\]$'
-          if ! [[ "$SQUASH_MSG" =~ $COMMIT_REGEX ]]; then
-            echo "Commit message does not meet the required template"
+          TITLE="${{ github.event.pull_request.title }}"
+          TITLE_REGEX='^country [a-zA-Z]{0,20} environment [a-zA-Z]{0,5} certificates [[a-zA-Z,][a-zA-Z0-9,]{0,49}]$'
+          if ! [[ "$TITLE" =~ $TITLE_REGEX ]]; then
+            echo "Title message ($TITLE) does not meet the required template"
             exit 1
           fi
+          COUNTRY=$(echo "$TITLE" | cut -d ' ' -f 2)
+          ENVIRONMENT=$(echo "$TITLE" | cut -d ' ' -f 4)
+          echo "country=$COUNTRY" >> $GITHUB_OUTPUT
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          cat "$GITHUB_OUTPUT"
 
   sync_certificates:
-    needs: [ check-squash-commit-message ]
+    needs: [ verifier ]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
-      country: "${{ github.event.inputs.country }}"
-      environment: "${{ github.event.inputs.environment }}"
-      certificates: "${{ github.event.inputs.country }}/${{ github.event.inputs.environment }}/certificates"
+      country: ${{ needs.verifier.outputs.country }}
+      environment: ${{ needs.verifier.outputs.environment }}
+      certificates: ${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates
     secrets: inherit
