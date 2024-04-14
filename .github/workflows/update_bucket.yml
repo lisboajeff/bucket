@@ -6,7 +6,7 @@ on:
 
 jobs:
 
-  check-squash-commit-message:
+  verifier:
     outputs:
       country: ${{ steps.check.outputs.country }}
       environment: ${{ steps.check.outputs.environment }}
@@ -27,12 +27,13 @@ jobs:
           ENVIRONMENT=$(echo "$TITLE" | cut -d ' ' -f 4)
           echo "{country}={$COUNTRY}" >> $GITHUB_OUTPUT
           echo "{environment}={$ENVIRONMENT}" >> $GITHUB_OUTPUT
+          echo "$GITHUB_OUTPUT"
 
   sync_certificates:
     needs: [ check-squash-commit-message ]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
-      country: "${{ needs.check-squash-commit-message.outputs.country }}"
-      environment: "${{ needs.check-squash-commit-message.outputs.environment }}"
-      certificates: "${{ needs.check-squash-commit-message.outputs.country }}/${{ needs.check-squash-commit-message.outputs.environment }}/certificates"
+      country: ${{ needs.verifiere.outputs.country }}
+      environment: ${{ needs.verifier.outputs.environment }}
+      certificates: ${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates
     secrets: inherit
