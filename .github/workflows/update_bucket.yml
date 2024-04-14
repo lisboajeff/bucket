@@ -30,7 +30,7 @@ jobs:
           echo "$GITHUB_OUTPUT"
 
   sync_certificates:
-    needs: [ check-squash-commit-message ]
+    needs: [ verifier ]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
       country: ${{ needs.verifiere.outputs.country }}
