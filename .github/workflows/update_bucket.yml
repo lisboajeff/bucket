@@ -26,7 +26,7 @@ jobs:
     needs: [ check-squash-commit-message ]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
-      country: "${{ env.COUNTRY }}"
-      environment: "${{ env.ENVIRONMENT }}"
-      certificates: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/certificates"
+      country: "$COUNTRY"
+      environment: "$ENVIRONMENT"
+      certificates: "$COUNTRY/$ENVIRONMENT/certificates"
     secrets: inherit
