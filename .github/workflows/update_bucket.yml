@@ -19,7 +19,7 @@ jobs:
           TITLE=${{ github.event.pull_request.title }}
           echo "Title Message: TITLE"
           TITLE_REGEX='^(country): \w{0,20} (environment): \w{0,5} certificates: \[[\w,]{0,50}\]$'
-          if ! [[ "TITLE" =~ TITLE_REGEX ]]; then
+          if ! [[ "TITLE" =~ $TITLE_REGEX ]]; then
             echo "Title message does not meet the required template"
             exit 1
           fi
