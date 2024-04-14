@@ -33,7 +33,7 @@ jobs:
     needs: [ verifier ]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
-      country: ${{ verifier.outputs.country }}
-      environment: ${{ verifier.outputs.environment }}
-      certificates: ${{ verifier.outputs.country }}/${{ verifier.outputs.environment }}/certificates
+      country: ${{ needs.verifier.outputs.country }}
+      environment: ${{ needs.verifier.outputs.environment }}
+      certificates: ${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates
     secrets: inherit
