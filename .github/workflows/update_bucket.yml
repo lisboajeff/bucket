@@ -14,7 +14,7 @@ on:
 
 jobs:
   sync_certificates:
-    uses: lisboajeff/bucket_python/.github/workflows/action.yml@test
+    uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
       country: "${{ github.event.inputs.country }}"
       environment: "${{ github.event.inputs.environment }}"
