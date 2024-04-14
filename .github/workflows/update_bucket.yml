@@ -1,19 +1,31 @@
 name: Synchronize Certificates to S3
 
 on:
-  workflow_dispatch:
-    inputs:
-      country:
-        description: 'Select the country: Brasil'
-        required: true
-        default: 'Brasil'
-      environment:
-        description: 'Select the environment: dev'
-        required: true
-        default: 'dev'
+  pull_request:
+    types: [ opened, synchronize, ready_for_review ]
 
 jobs:
+
+  check-squash-commit-message:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check Commit Message
+        run: |
+          SQUASH_MSG=$(git log --format=%B -n 1 HEAD)
+          echo "Squash Commit Message: $SQUASH_MSG"
+          COMMIT_REGEX='^(country): \w{0,20} (environment): \w{0,5} certificates: \[[\w,]{0,50}\]$'
+          if ! [[ "$SQUASH_MSG" =~ $COMMIT_REGEX ]]; then
+            echo "Commit message does not meet the required template"
+            exit 1
+          fi
+
   sync_certificates:
+    needs: [ check-squash-commit-message ]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
       country: "${{ github.event.inputs.country }}"
