@@ -24,8 +24,8 @@ jobs:
           fi
           COUNTRY=$(echo "$TITLE" | cut -d ' ' -f 2)
           ENVIRONMENT=$(echo "$TITLE" | cut -d ' ' -f 4)
-          echo "::set-output name=country::$COUNTRY"
-          echo "::set-output name=environment::$ENVIRONMENT"
+          echo "{country}={$COUNTRY}" >> $GITHUB_OUTPUT
+          echo "{environment}={$ENVIRONMENT}" >> $GITHUB_OUTPUT
 
   sync_certificates:
     needs: [ check-squash-commit-message ]
