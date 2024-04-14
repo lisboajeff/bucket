@@ -8,13 +8,14 @@ jobs:
 
   check-squash-commit-message:
     outputs:
-      country: ${{ steps.set_vars.outputs.country }}
-      environment: ${{ steps.set_vars.outputs.environment }}
+      country: ${{ steps.check.outputs.country }}
+      environment: ${{ steps.check.outputs.environment }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Check Title Message
+        id: check
         run: |
           TITLE="${{ github.event.pull_request.title }}"
           TITLE_REGEX='^country [a-zA-Z]{0,20} environment [a-zA-Z]{0,5} certificates [[a-zA-Z,][a-zA-Z0-9,]{0,49}]$'
