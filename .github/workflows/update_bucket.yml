@@ -38,5 +38,5 @@ jobs:
       base_path: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates"
       description: "${{ needs.verifier.outputs.country }}:${{ needs.verifier.outputs.environment }}"
       configuration: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/config.env"
-      expression_file_paths: "keystore:crt,truststore:pem"
+      directory_properties: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/directory.properties"
     secrets: inherit
