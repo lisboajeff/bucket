@@ -34,9 +34,9 @@ jobs:
   sync_certificates:
     needs: [ verifier ]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
+    secrets: inherit
     with:
       base_path: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates"
       description: "${{ needs.verifier.outputs.country }}:${{ needs.verifier.outputs.environment }}"
       configuration: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/config.env"
       directory_properties: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/directory.properties"
-    secrets: inherit
