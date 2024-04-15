@@ -33,7 +33,7 @@ jobs:
 
   sync_certificates:
     needs: [ verifier ]
-    uses: lisboajeff/bucket_python/.github/workflows/action.yml@refatorando
+    uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
       base_path: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates"
       description: "${{ needs.verifier.outputs.country }}:${{ needs.verifier.outputs.environment }}"
