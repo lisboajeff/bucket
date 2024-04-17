@@ -3,10 +3,13 @@ name: Planning Files to S3
 on:
   pull_request:
     types: [ opened, synchronize, ready_for_review, edited ]
-
+  push:
+    branches:
+      - main
 jobs:
 
   verifier:
+    if: github.event_name == 'pull_request'
     outputs:
       country: ${{ steps.check.outputs.country }}
       environment: ${{ steps.check.outputs.environment }}
@@ -32,6 +35,7 @@ jobs:
           cat "$GITHUB_OUTPUT"
 
   planning:
+    if: github.event_name == 'pull_request'
     needs: [ verifier ]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@feature/planning
     secrets: inherit
@@ -43,7 +47,6 @@ jobs:
       type: 'planning'
 
   push_to_main:
-    needs: [ planning ]
     if: github.ref == 'refs/heads/main' && github.event.pull_request.merged == true
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@feature/planning
     secrets: inherit
