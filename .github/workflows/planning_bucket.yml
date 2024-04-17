@@ -40,3 +40,4 @@ jobs:
       description: "${{ needs.verifier.outputs.country }}:${{ needs.verifier.outputs.environment }}"
       configuration: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/config.env"
       directory_properties: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/directory.properties"
+      type: 'planning'
