@@ -1,4 +1,4 @@
-name: Synchronize Certificates to S3
+name: Planning Files to S3
 
 on:
   pull_request:
@@ -31,9 +31,9 @@ jobs:
           echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
           cat "$GITHUB_OUTPUT"
 
-  sync_certificates:
+  planning:
     needs: [ verifier ]
-    uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
+    uses: lisboajeff/bucket_python/.github/workflows/action.yml@feature/planning
     secrets: inherit
     with:
       base_path: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates"
@@ -41,3 +41,15 @@ jobs:
       configuration: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/config.env"
       directory_properties: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/directory.properties"
       type: 'planning'
+
+  push_to_main:
+    needs: [ planning ]
+    if: github.ref == 'refs/heads/main' && github.event.pull_request.merged == true
+    uses: lisboajeff/bucket_python/.github/workflows/action.yml@feature/planning
+    secrets: inherit
+    with:
+      base_path: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates"
+      description: "${{ needs.verifier.outputs.country }}:${{ needs.verifier.outputs.environment }}"
+      configuration: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/config.env"
+      directory_properties: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/directory.properties"
+      type: 'apply'
