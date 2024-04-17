@@ -37,7 +37,7 @@ jobs:
   planning:
     if: github.event_name == 'pull_request'
     needs: [ verifier ]
-    uses: lisboajeff/bucket_python/.github/workflows/action.yml@feature/planning
+    uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     secrets: inherit
     with:
       base_path: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates"
@@ -48,7 +48,7 @@ jobs:
 
   push_to_main:
     if: github.ref == 'refs/heads/main' && github.event.pull_request.merged == true
-    uses: lisboajeff/bucket_python/.github/workflows/action.yml@feature/planning
+    uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     secrets: inherit
     with:
       base_path: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates"
