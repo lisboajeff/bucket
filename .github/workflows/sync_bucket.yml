@@ -47,7 +47,7 @@ jobs:
       type: 'planning'
 
   push_to_main:
-    if: github.ref == 'refs/heads/main' && github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     secrets: inherit
     with:
