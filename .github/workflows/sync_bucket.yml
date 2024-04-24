@@ -6,16 +6,19 @@ on:
   push:
     branches:
       - main
-jobs:
 
-  planning:
+jobs:
+  setup:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    outputs:
+      country: ${{ steps.check.outputs.country }}
+      environment: ${{ steps.check.outputs.environment }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Check Title Message
-        id: check
+        id: set-vars
         run: |
           TITLE="${{ github.event.pull_request.title }}"
           TITLE_REGEX='^country [a-zA-Z]{0,20} environment [a-zA-Z]{0,5} [a-zA-Z][a-zA-Z0-9,]{0,49}$'
@@ -27,50 +30,34 @@ jobs:
           fi
           COUNTRY=$(echo "$TITLE" | cut -d ' ' -f 2)
           ENVIRONMENT=$(echo "$TITLE" | cut -d ' ' -f 4)
-          echo "COUNTRY=$COUNTRY" >> $GITHUB_ENV
-          echo "ENVIRONMENT=$ENVIRONMENT" >> $GITHUB_ENV
-      - name: Execute Planning
-        uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
-        with:
-          base_path: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/certificates"
-          description: "${{ env.COUNTRY }}:${{ env.ENVIRONMENT }}"
-          configuration: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/config.env"
-          directory_properties: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/directory.properties"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          type: 'planning'
-      - name: Save Environment Variables
-        run: |
-          echo "COUNTRY=$COUNTRY" >> env.txt
-          echo "ENVIRONMENT=$ENVIRONMENT" >> env.txt
-      - name: Upload Environment File as Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: env-file
-          path: env.txt
+          echo "country=$COUNTRY" >> $GITHUB_OUTPUT
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          cat "$GITHUB_OUTPUT"
+
+  execute_planning:
+    if: github.event_name == 'pull_request'
+    needs: setup
+    uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
+    with:
+      base_path: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/certificates"
+      description: "${{ needs.setup.outputs.country }}:${{ needs.setup.outputs.environment }}"
+      configuration: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/config.env"
+      directory_properties: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/directory.properties"
+      type: 'planning'
+    secrets: inherit
 
   apply:
-    needs: planning
+    needs: execute_planning
     runs-on: ubuntu-latest
     environment: approval
     steps:
-      - name: Download Environment File
-        uses: actions/download-artifact@v2
-        with:
-          name: env-file
-          path: .
-      - name: Load Environment Variables
-        run: |
-          readarray -t env_vars < env.txt
-          COUNTRY="${env_vars[0]}"  >> $GITHUB_ENV
-          ENVIRONMENT="${env_vars[1]}"  >> $GITHUB_ENV
       - name: Execute Apply
         uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
         with:
-          base_path: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/certificates"
-          description: "${{ env.COUNTRY }}:${{ env.ENVIRONMENT }}"
-          configuration: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/config.env"
-          directory_properties: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/directory.properties"
+          base_path: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/certificates"
+          description: "${{ needs.setup.outputs.country }}:${{ needs.setup.outputs.environment }}"
+          configuration: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/config.env"
+          directory_properties: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/directory.properties"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           type: 'apply'
