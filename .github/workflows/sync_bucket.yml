@@ -38,7 +38,7 @@ jobs:
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
       base_path: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/certificates"
-      description: "${{ needs.setup.outputs.country }}:${{ needs.setup.outputs.environment }}"
+      description: "planning changes to the bucket"
       configuration: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/config.env"
       directory_properties: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/directory.properties"
       type: 'planning'
@@ -57,7 +57,7 @@ jobs:
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
       base_path: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/certificates"
-      description: "${{ needs.setup.outputs.country }}:${{ needs.setup.outputs.environment }}"
+      description: "Performing changes to the bucket"
       configuration: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/config.env"
       directory_properties: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/directory.properties"
       type: 'apply'
