@@ -9,7 +9,6 @@ on:
 
 jobs:
   setup:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       country: ${{ steps.check.outputs.country }}
@@ -35,7 +34,6 @@ jobs:
           cat "$GITHUB_OUTPUT"
 
   execute_planning:
-    if: github.event_name == 'pull_request'
     needs: setup
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
