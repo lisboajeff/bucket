@@ -3,9 +3,6 @@ name: Planning Files to S3
 on:
   pull_request:
     types: [ opened, synchronize, ready_for_review, edited ]
-  push:
-    branches:
-      - main
 
 jobs:
   setup:
