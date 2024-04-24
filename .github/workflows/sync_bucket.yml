@@ -53,7 +53,7 @@ jobs:
         run: echo "OK"
 
   apply:
-    needs: approval
+    needs: [approval, setup]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
       base_path: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/certificates"
