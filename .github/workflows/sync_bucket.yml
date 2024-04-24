@@ -47,12 +47,15 @@ jobs:
   apply:
     needs: execute_planning
     environment: approval
-    uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
-    with:
-      base_path: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/certificates"
-      description: "${{ needs.setup.outputs.country }}:${{ needs.setup.outputs.environment }}"
-      configuration: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/config.env"
-      directory_properties: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/directory.properties"
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      type: 'apply'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Applay
+        uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
+        with:
+          base_path: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/certificates"
+          description: "${{ needs.setup.outputs.country }}:${{ needs.setup.outputs.environment }}"
+          configuration: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/config.env"
+          directory_properties: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/directory.properties"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          type: 'apply'
