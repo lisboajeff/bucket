@@ -6,19 +6,18 @@ on:
   push:
     branches:
       - main
-jobs:
 
-  verifier:
-    if: github.event_name == 'pull_request'
-    outputs:
-      country: ${{ steps.check.outputs.country }}
-      environment: ${{ steps.check.outputs.environment }}
+jobs:
+  setup:
     runs-on: ubuntu-latest
+    outputs:
+      country: ${{ steps.set-vars.outputs.country }}
+      environment: ${{ steps.set-vars.outputs.environment }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Check Title Message
-        id: check
+        id: set-vars
         run: |
           TITLE="${{ github.event.pull_request.title }}"
           TITLE_REGEX='^country [a-zA-Z]{0,20} environment [a-zA-Z]{0,5} [a-zA-Z][a-zA-Z0-9,]{0,49}$'
@@ -34,25 +33,32 @@ jobs:
           echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
           cat "$GITHUB_OUTPUT"
 
-  planning:
-    if: github.event_name == 'pull_request'
-    needs: [ verifier ]
+  execute_planning:
+    needs: [ setup ]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
-    secrets: inherit
     with:
-      base_path: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates"
-      description: "${{ needs.verifier.outputs.country }}:${{ needs.verifier.outputs.environment }}"
-      configuration: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/config.env"
-      directory_properties: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/directory.properties"
+      base_path: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/certificates"
+      description: "planning changes to the bucket"
+      configuration: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/config.env"
+      directory_properties: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/directory.properties"
       type: 'planning'
-
-  push_to_main:
-    if: github.ref == 'refs/heads/main'
-    uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     secrets: inherit
+
+  approval:
+    needs: execute_planning
+    runs-on: ubuntu-latest
+    environment: approved
+    steps:
+      - name: Request approval
+        run: echo "OK"
+
+  apply:
+    needs: [approval, setup]
+    uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
-      base_path: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates"
-      description: "${{ needs.verifier.outputs.country }}:${{ needs.verifier.outputs.environment }}"
-      configuration: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/config.env"
-      directory_properties: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/directory.properties"
+      base_path: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/certificates"
+      description: "Performing changes to the bucket"
+      configuration: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/config.env"
+      directory_properties: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/directory.properties"
       type: 'apply'
+    secrets: inherit
