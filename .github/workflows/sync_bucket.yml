@@ -8,11 +8,8 @@ on:
       - main
 jobs:
 
-  verifier:
+  planning:
     if: github.event_name == 'pull_request'
-    outputs:
-      country: ${{ steps.check.outputs.country }}
-      environment: ${{ steps.check.outputs.environment }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -30,29 +27,50 @@ jobs:
           fi
           COUNTRY=$(echo "$TITLE" | cut -d ' ' -f 2)
           ENVIRONMENT=$(echo "$TITLE" | cut -d ' ' -f 4)
-          echo "country=$COUNTRY" >> $GITHUB_OUTPUT
-          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
-          cat "$GITHUB_OUTPUT"
+          echo "COUNTRY=$COUNTRY" >> $GITHUB_ENV
+          echo "ENVIRONMENT=$ENVIRONMENT" >> $GITHUB_ENV
+      - name: Execute Planning
+        uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
+        with:
+          base_path: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/certificates"
+          description: "${{ env.COUNTRY }}:${{ env.ENVIRONMENT }}"
+          configuration: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/config.env"
+          directory_properties: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/directory.properties"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          type: 'planning'
+      - name: Save Environment Variables
+        run: |
+          echo "COUNTRY=$COUNTRY" >> env.txt
+          echo "ENVIRONMENT=$ENVIRONMENT" >> env.txt
+      - name: Upload Environment File as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: env-file
+          path: env.txt
 
-  planning:
-    if: github.event_name == 'pull_request'
-    needs: [ verifier ]
-    uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
-    secrets: inherit
-    with:
-      base_path: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates"
-      description: "${{ needs.verifier.outputs.country }}:${{ needs.verifier.outputs.environment }}"
-      configuration: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/config.env"
-      directory_properties: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/directory.properties"
-      type: 'planning'
-
-  push_to_main:
-    if: github.ref == 'refs/heads/main'
-    uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
-    secrets: inherit
-    with:
-      base_path: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/certificates"
-      description: "${{ needs.verifier.outputs.country }}:${{ needs.verifier.outputs.environment }}"
-      configuration: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/config.env"
-      directory_properties: "${{ needs.verifier.outputs.country }}/${{ needs.verifier.outputs.environment }}/directory.properties"
-      type: 'apply'
+  apply:
+    needs: planning
+    runs-on: ubuntu-latest
+    environment: approval
+    steps:
+      - name: Download Environment File
+        uses: actions/download-artifact@v2
+        with:
+          name: env-file
+          path: .
+      - name: Load Environment Variables
+        run: |
+          readarray -t env_vars < env.txt
+          COUNTRY="${env_vars[0]}"  >> $GITHUB_ENV
+          ENVIRONMENT="${env_vars[1]}"  >> $GITHUB_ENV
+      - name: Execute Apply
+        uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
+        with:
+          base_path: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/certificates"
+          description: "${{ env.COUNTRY }}:${{ env.ENVIRONMENT }}"
+          configuration: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/config.env"
+          directory_properties: "${{ env.COUNTRY }}/${{ env.ENVIRONMENT }}/directory.properties"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          type: 'apply'
