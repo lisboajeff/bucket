@@ -44,35 +44,10 @@ jobs:
   approval:
     needs: execute_planning
     runs-on: ubuntu-latest
+    environment: approved
     steps:
       - name: Request approval
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data: pullRequest } = await github.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number
-            });
-    
-            // Create a review request
-            const { data: review } = await github.pulls.createReview({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number,
-              event: 'APPROVE',
-              body: 'Please approve this pull request to proceed with the apply job.'
-            });
-    
-            // Merge the pull request
-            const { data: merge } = await github.pulls.merge({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number
-            });
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "OK"
 
   apply:
     needs: [ approval, setup ]
