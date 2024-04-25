@@ -3,9 +3,6 @@ name: Planning Files to S3
 on:
   pull_request:
     types: [ opened, synchronize, ready_for_review, edited ]
-  push:
-    branches:
-      - main
 
 jobs:
   setup:
@@ -20,15 +17,15 @@ jobs:
         id: set-vars
         run: |
           TITLE="${{ github.event.pull_request.title }}"
-          TITLE_REGEX='^country [a-zA-Z]{0,20} environment [a-zA-Z]{0,5} [a-zA-Z][a-zA-Z0-9,]{0,49}$'
+          TITLE_REGEX='^\([a-zA-Z]{0,20} [a-zA-Z]{0,5}\) [a-zA-Z][a-zA-Z0-9, ]{0,49}$'
           if ! [[ "$TITLE" =~ $TITLE_REGEX ]]; then
             echo "The title of the pull request does not match the expected format." >> $GITHUB_STEP_SUMMARY
             echo "## Expected Format" >> $GITHUB_STEP_SUMMARY
-            echo "country <country name> environment <environment> certificates [certificate1,certificate2,...,certificateN]" >> $GITHUB_STEP_SUMMARY
+            echo "(country_name environment) Description" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-          COUNTRY=$(echo "$TITLE" | cut -d ' ' -f 2)
-          ENVIRONMENT=$(echo "$TITLE" | cut -d ' ' -f 4)
+          COUNTRY=$(echo "$TITLE" | cut -d ' ' -f 1 | cut -d '(' -f 2)
+          ENVIRONMENT=$(echo "$TITLE" | cut -d ' ' -f 2 | cut -d ')' -f 1)
           echo "country=$COUNTRY" >> $GITHUB_OUTPUT
           echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
           cat "$GITHUB_OUTPUT"
@@ -53,7 +50,7 @@ jobs:
         run: echo "OK"
 
   apply:
-    needs: [approval, setup]
+    needs: [ approval, setup ]
     uses: lisboajeff/bucket_python/.github/workflows/action.yml@main
     with:
       base_path: "${{ needs.setup.outputs.country }}/${{ needs.setup.outputs.environment }}/certificates"
